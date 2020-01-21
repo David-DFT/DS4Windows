@@ -9,10 +9,7 @@ namespace DS4Windows
 
         public static void LogToGui(string data, bool warning)
         {
-            if (GuiLog != null)
-            {
-                GuiLog(null, new DebugEventArgs(data, warning));
-            }
+            GuiLog?.Invoke(null, new DebugEventArgs(data, warning));
         }
 
         public static void LogToTray(string data, bool warning = false, bool ignoreSettings = false)

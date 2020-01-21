@@ -3,98 +3,58 @@ namespace DS4Windows
 {
     public class DS4StateExposed
     {
-        private DS4State _state;
+        public DS4StateExposed() => _state = new DS4State();
+        public DS4StateExposed(DS4State state) => _state = state;
 
-        public DS4StateExposed()
-        {
-            _state = new DS4State();
-        }
+        private readonly DS4State _state;
 
-        public DS4StateExposed(DS4State state)
-        {
-            _state = state;
-        }
+        public bool Square => _state.Square;
+        public bool Triangle => _state.Triangle;
+        public bool Circle => _state.Circle;
+        public bool Cross => _state.Cross;
 
-        bool Square { get { return _state.Square; } }
-        bool Triangle { get { return _state.Triangle; } }
-        bool Circle { get { return _state.Circle; } }
-        bool Cross { get { return _state.Cross; } }
-        bool DpadUp { get { return _state.DpadUp; } }
-        bool DpadDown { get { return _state.DpadDown; } }
-        bool DpadLeft { get { return _state.DpadLeft; } }
-        bool DpadRight { get { return _state.DpadRight; } }
-        bool L1 { get { return _state.L1; } }
-        bool L3 { get { return _state.L3; } }
-        bool R1 { get { return _state.R1; } }
-        bool R3 { get { return _state.R3; } }
-        bool Share { get { return _state.Share; } }
-        bool Options { get { return _state.Options; } }
-        bool PS { get { return _state.PS; } }
-        bool Touch1 { get { return _state.Touch1; } }
-        bool Touch2 { get { return _state.Touch2; } }
-        bool TouchButton { get { return _state.TouchButton; } }
-        bool Touch1Finger { get { return _state.Touch1Finger; } }
-        bool Touch2Fingers { get { return _state.Touch2Fingers; } }
-        byte LX { get { return _state.LX; } }
-        byte RX { get { return _state.RX; } }
-        byte LY { get { return _state.LY; } }
-        byte RY { get { return _state.RY; } }
-        byte L2 { get { return _state.L2; } }
-        byte R2 { get { return _state.R2; } }
-        int Battery { get { return _state.Battery; } }
+        public bool DpadUp => _state.DpadUp;
+        public bool DpadDown => _state.DpadDown;
+        public bool DpadLeft => _state.DpadLeft;
+        public bool DpadRight => _state.DpadRight;
 
-        public int GyroYaw { get { return _state.Motion.gyroYaw; } }
-        public int getGyroYaw()
-        {
-            return _state.Motion.gyroYaw;
-        }
+        public bool L1 => _state.L1;
+        public bool L3 => _state.L3;
 
-        public int GyroPitch { get { return _state.Motion.gyroPitch; } }
-        public int getGyroPitch()
-        {
-            return _state.Motion.gyroPitch;
-        }
+        public bool R1 => _state.R1;
+        public bool R3 => _state.R3;
 
-        public int GyroRoll { get { return _state.Motion.gyroRoll; } }
-        public int getGyroRoll()
-        {
-            return _state.Motion.gyroRoll;
-        }
+        public bool Share => _state.Share;
+        public bool Options => _state.Options;
+        public bool PS => _state.PS;
 
-        public int AccelX { get { return _state.Motion.accelX; } }
-        public int getAccelX()
-        {
-            return _state.Motion.accelX;
-        }
+        public bool Touch1 => _state.Touch1;
+        public bool Touch2 => _state.Touch2;
+        public bool TouchButton => _state.TouchButton;
+        public bool Touch1Finger => _state.Touch1Finger;
+        public bool Touch2Fingers => _state.Touch2Fingers;
 
-        public int AccelY { get { return _state.Motion.accelY; } }
-        public int getAccelY()
-        {
-            return _state.Motion.accelY;
-        }
+        public byte LX => _state.LX;
+        public byte RX => _state.RX;
 
-        public int AccelZ { get { return _state.Motion.accelZ; } }
-        public int getAccelZ()
-        {
-            return _state.Motion.accelZ;
-        }
+        public byte LY => _state.LY;
+        public byte RY => _state.RY;
 
-        public int OutputAccelX { get { return _state.Motion.outputAccelX; } }
-        public int getOutputAccelX()
-        {
-            return _state.Motion.outputAccelX;
-        }
+        public byte L2 => _state.L2;
+        public byte R2 => _state.R2;
 
-        public int OutputAccelY { get { return _state.Motion.outputAccelY; } }
-        public int getOutputAccelY()
-        {
-            return _state.Motion.outputAccelY;
-        }
+        public int Battery => _state.Battery;
 
-        public int OutputAccelZ { get { return _state.Motion.outputAccelZ; } }
-        public int getOutputAccelZ()
-        {
-            return _state.Motion.outputAccelZ;
-        }
+        public int GyroYaw => _state.Motion.gyroYaw;
+        public int GyroPitch => _state.Motion.gyroPitch;
+        public int GyroRoll => _state.Motion.gyroRoll;
+
+        public int AccelX => _state.Motion.accelX;
+        public int AccelY => _state.Motion.accelY;
+        public int AccelZ => _state.Motion.accelZ;
+
+        public int OutputAccelX => _state.Motion.outputAccelX;
+        public int OutputAccelY => _state.Motion.outputAccelY;
+        public int OutputAccelZ => _state.Motion.outputAccelZ;
     }
 }

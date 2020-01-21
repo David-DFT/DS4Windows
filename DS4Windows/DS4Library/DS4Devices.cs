@@ -7,29 +7,34 @@ using System.Security.Principal;
 
 namespace DS4Windows
 {
-    public class VidPidInfo
+    public sealed class VidPidInfo
     {
-        public readonly int vid;
-        public readonly int pid;
-        public readonly string name;
+        public int Vid { get; }
+        public int Pid { get; }
+        public string Name { get; }
+
         internal VidPidInfo(int vid, int pid, string name = "Generic DS4")
         {
-            this.vid = vid;
-            this.pid = pid;
-            this.name = name;
+            Vid = vid;
+            Pid = pid;
+            Name = name;
         }
     }
 
     public class DS4Devices
     {
+        private const string DeviceIgnoreDescription = "HID-compliant vendor-defined device";
+
         // (HID device path, DS4Device)
-        private static Dictionary<string, DS4Device> Devices = new Dictionary<string, DS4Device>();
-        private static HashSet<string> deviceSerials = new HashSet<string>();
-        private static HashSet<string> DevicePaths = new HashSet<string>();
+        private static Dictionary<string, DS4Device> Devices { get; } = new Dictionary<string, DS4Device>();
+        private static HashSet<string> DeviceSerials { get; } = new HashSet<string>();
+        private static HashSet<string> DevicePaths { get; } = new HashSet<string>();
         // Keep instance of opened exclusive mode devices not in use (Charging while using BT connection)
-        private static List<HidDevice> DisabledDevices = new List<HidDevice>();
-        private static Stopwatch sw = new Stopwatch();
-        public static bool isExclusiveMode = false;
+        private static List<HidDevice> DisabledDevices { get; } = new List<HidDevice>();
+        private static Stopwatch Stopwatch { get; } = new Stopwatch();
+
+        public static bool IsExclusiveMode { get; set; } = false;
+
         internal const int SONY_VID = 0x054C;
         internal const int RAZER_VID = 0x1532;
         internal const int NACON_VID = 0x146B;
@@ -38,7 +43,7 @@ namespace DS4Windows
         // https://support.steampowered.com/kb_article.php?ref=5199-TOKV-4426&l=english web site has a list of other PS4 compatible device VID/PID values and brand names. 
         // However, not all those are guaranteed to work with DS4Windows app so support is added case by case when users of DS4Windows app tests non-official DS4 gamepads.
 
-        private static VidPidInfo[] knownDevices =
+        private static VidPidInfo[] KnownDevices { get; } =
         {
             new VidPidInfo(SONY_VID, 0xBA0, "Sony WA"),
             new VidPidInfo(SONY_VID, 0x5C4, "DS4 v.1"),
@@ -62,136 +67,158 @@ namespace DS4Windows
             new VidPidInfo(NACON_VID, 0x0D13, "Nacon Revol Pro v.3"),
         };
 
-        private static string devicePathToInstanceId(string devicePath)
+        private static string DevicePathToInstanceId(string devicePath)
         {
             string deviceInstanceId = devicePath;
             deviceInstanceId = deviceInstanceId.Remove(0, deviceInstanceId.LastIndexOf('\\') + 1);
             deviceInstanceId = deviceInstanceId.Remove(deviceInstanceId.LastIndexOf('{'));
             deviceInstanceId = deviceInstanceId.Replace('#', '\\');
             if (deviceInstanceId.EndsWith("\\"))
-            {
                 deviceInstanceId = deviceInstanceId.Remove(deviceInstanceId.Length - 1);
-            }
-
             return deviceInstanceId;
         }
 
         private static bool IsRealDS4(HidDevice hDevice)
         {
-            string deviceInstanceId = devicePathToInstanceId(hDevice.DevicePath);
-            string temp = Global.GetDeviceProperty(deviceInstanceId,
-                NativeMethods.DEVPKEY_Device_UINumber);
+            string deviceInstanceId = DevicePathToInstanceId(hDevice.DevicePath);
+            string temp = Global.GetDeviceProperty(deviceInstanceId, NativeMethods.DEVPKEY_Device_UINumber);
             return string.IsNullOrEmpty(temp);
         }
 
         // Enumerates ds4 controllers in the system
-        public static void findControllers()
+        public static void FindControllers()
         {
             lock (Devices)
             {
-                IEnumerable<HidDevice> hDevices = HidDevices.EnumerateDS4(knownDevices);
-                hDevices = hDevices.Where(dev => IsRealDS4(dev)).Select(dev => dev);
-                //hDevices = from dev in hDevices where IsRealDS4(dev) select dev;
                 // Sort Bluetooth first in case USB is also connected on the same controller.
-                hDevices = hDevices.OrderBy<HidDevice, ConnectionType>((HidDevice d) => { return DS4Device.HidConnectionType(d); });
+                var hids = HidDevices.EnumerateDS4(KnownDevices).Where(dev => IsRealDS4(dev)).OrderBy(d2 => DS4Device.GetHidConnectionType(d2));
 
-                List<HidDevice> tempList = hDevices.ToList();
-                purgeHiddenExclusiveDevices();
-                tempList.AddRange(DisabledDevices);
-                int devCount = tempList.Count();
-                string devicePlural = "device" + (devCount == 0 || devCount > 1 ? "s" : "");
-                //Log.LogToGui("Found " + devCount + " possible " + devicePlural + ". Examining " + devicePlural + ".", false);
+                PurgeHiddenExclusiveDevices();
+                var disabledCopy = DisabledDevices.ToList();
 
-                for (int i = 0; i < devCount; i++)
-                //foreach (HidDevice hDevice in hDevices)
+                foreach (HidDevice hDevice in hids)
+                    EvalHid(hDevice);
+
+                foreach (HidDevice hDevice in disabledCopy)
+                    EvalHid(hDevice);
+            }
+        }
+
+        private static void EvalHid(HidDevice hDevice)
+        {
+            if (IgnoreDevice(hDevice))
+                return;
+
+            if (!hDevice.IsOpen)
+                OpenDevice(hDevice);
+
+            if (!hDevice.IsOpen)
+                return;
+
+            string serial = hDevice.ReadSerial();
+            if (DS4Device.IsValidSerial(serial))
+            {
+                if (DeviceSerials.Contains(serial))
+                    OnSerialExists(hDevice);
+                else
                 {
-                    HidDevice hDevice = tempList[i];
-                    if (hDevice.Description == "HID-compliant vendor-defined device")
-                        continue; // ignore the Nacon Revolution Pro programming interface
-                    else if (DevicePaths.Contains(hDevice.DevicePath))
-                        continue; // BT/USB endpoint already open once
-
-                    VidPidInfo metainfo = knownDevices.Single(x => x.vid == hDevice.Attributes.VendorId &&
-                        x.pid == hDevice.Attributes.ProductId);
-                    if (!hDevice.IsOpen)
+                    try
                     {
-                        hDevice.OpenDevice(isExclusiveMode);
-                        if (!hDevice.IsOpen && isExclusiveMode)
-                        {
-                            try
-                            {
-                                WindowsIdentity identity = WindowsIdentity.GetCurrent();
-                                WindowsPrincipal principal = new WindowsPrincipal(identity);
-                                bool elevated = principal.IsInRole(WindowsBuiltInRole.Administrator);
+                        VidPidInfo metainfo = KnownDevices.Single(x =>
+                            x.Vid == hDevice.Attributes.VendorId &&
+                            x.Pid == hDevice.Attributes.ProductId);
 
-                                if (!elevated)
-                                {
-                                    // Launches an elevated child process to re-enable device
-                                    string exeName = Process.GetCurrentProcess().MainModule.FileName;
-                                    ProcessStartInfo startInfo = new ProcessStartInfo(exeName);
-                                    startInfo.Verb = "runas";
-                                    startInfo.Arguments = "re-enabledevice " + devicePathToInstanceId(hDevice.DevicePath);
-                                    Process child = Process.Start(startInfo);
-
-                                    if (!child.WaitForExit(30000))
-                                    {
-                                        child.Kill();
-                                    }
-                                    else if (child.ExitCode == 0)
-                                    {
-                                        hDevice.OpenDevice(isExclusiveMode);
-                                    }
-                                }
-                                else
-                                {
-                                    reEnableDevice(devicePathToInstanceId(hDevice.DevicePath));
-                                    hDevice.OpenDevice(isExclusiveMode);
-                                }
-                            }
-                            catch (Exception) { }
-                        }
-                        
-                        // TODO in exclusive mode, try to hold both open when both are connected
-                        if (isExclusiveMode && !hDevice.IsOpen)
-                            hDevice.OpenDevice(false);
+                        if (metainfo != null)
+                            OnAddSerial(hDevice, metainfo, serial);
                     }
-
-                    if (hDevice.IsOpen)
+                    catch 
                     {
-                        string serial = hDevice.readSerial();
-                        bool validSerial = !serial.Equals(DS4Device.blankSerial);
-                        if (validSerial && deviceSerials.Contains(serial))
-                        {
-                            // happens when the BT endpoint already is open and the USB is plugged into the same host
-                            if (isExclusiveMode && hDevice.IsExclusive &&
-                                !DisabledDevices.Contains(hDevice))
-                            {
-                                // Grab reference to exclusively opened HidDevice so device
-                                // stays hidden to other processes
-                                DisabledDevices.Add(hDevice);
-                                //DevicePaths.Add(hDevice.DevicePath);
-                            }
-
-                            continue;
-                        }
-                        else
-                        {
-                            DS4Device ds4Device = new DS4Device(hDevice, metainfo.name);
-                            //ds4Device.Removal += On_Removal;
-                            if (!ds4Device.ExitOutputThread)
-                            {
-                                Devices.Add(hDevice.DevicePath, ds4Device);
-                                DevicePaths.Add(hDevice.DevicePath);
-                                deviceSerials.Add(serial);
-                            }
-                        }
+                        // Single() may throw an exception
                     }
                 }
             }
         }
-        
+
+        private static bool IgnoreDevice(HidDevice hDevice)
+        {
+            if (hDevice.Description == DeviceIgnoreDescription)
+                return true; // ignore the Nacon Revolution Pro programming interface
+
+            if (DevicePaths.Contains(hDevice.DevicePath))
+                return true; // BT/USB endpoint already open once
+
+            return false;
+        }
+
+        private static void OnAddSerial(HidDevice hDevice, VidPidInfo metainfo, string serial)
+        {
+            DS4Device ds4Device = new DS4Device(hDevice, metainfo.Name);
+            //ds4Device.Removal += On_Removal;
+            if (!ds4Device.ExitOutputThread)
+            {
+                Devices.Add(hDevice.DevicePath, ds4Device);
+                DevicePaths.Add(hDevice.DevicePath);
+                DeviceSerials.Add(serial);
+            }
+        }
+
+        private static void OnSerialExists(HidDevice hDevice)
+        {
+            // happens when the BT endpoint already is open and the USB is plugged into the same host
+            if (IsExclusiveMode && hDevice.IsExclusive && !DisabledDevices.Contains(hDevice))
+            {
+                // Grab reference to exclusively opened HidDevice so device
+                // stays hidden to other processes
+                DisabledDevices.Add(hDevice);
+                //DevicePaths.Add(hDevice.DevicePath);
+            }
+        }
+
+        private static void OpenDevice(HidDevice hDevice)
+        {
+            hDevice.OpenDevice(IsExclusiveMode);
+            if (!hDevice.IsOpen && IsExclusiveMode)
+            {
+                try
+                {
+                    WindowsIdentity identity = WindowsIdentity.GetCurrent();
+                    WindowsPrincipal principal = new WindowsPrincipal(identity);
+                    bool elevated = principal.IsInRole(WindowsBuiltInRole.Administrator);
+
+                    if (!elevated)
+                    {
+                        // Launches an elevated child process to re-enable device
+                        string exeName = Process.GetCurrentProcess().MainModule.FileName;
+                        ProcessStartInfo startInfo = new ProcessStartInfo(exeName);
+                        startInfo.Verb = "runas";
+                        startInfo.Arguments = "re-enabledevice " + DevicePathToInstanceId(hDevice.DevicePath);
+                        Process child = Process.Start(startInfo);
+
+                        if (!child.WaitForExit(30000))
+                        {
+                            child.Kill();
+                        }
+                        else if (child.ExitCode == 0)
+                        {
+                            hDevice.OpenDevice(IsExclusiveMode);
+                        }
+                    }
+                    else
+                    {
+                        ReEnableDevice(DevicePathToInstanceId(hDevice.DevicePath));
+                        hDevice.OpenDevice(IsExclusiveMode);
+                    }
+                }
+                catch (Exception) { }
+            }
+
+            // TODO in exclusive mode, try to hold both open when both are connected
+            if (IsExclusiveMode && !hDevice.IsOpen)
+                hDevice.OpenDevice(false);
+        }
+
         // Returns DS4 controllers that were found and are running
-        public static IEnumerable<DS4Device> getDS4Controllers()
+        public static IEnumerable<DS4Device> GetDS4Controllers()
         {
             lock (Devices)
             {
@@ -201,48 +228,38 @@ namespace DS4Windows
             }
         }
 
-        public static void stopControllers()
+        public static void StopControllers()
         {
             lock (Devices)
             {
-                IEnumerable<DS4Device> devices = getDS4Controllers();
-                //foreach (DS4Device device in devices)
-                //for (int i = 0, devCount = devices.Count(); i < devCount; i++)
-                for (var devEnum = devices.GetEnumerator(); devEnum.MoveNext();)
+                IEnumerable<DS4Device> devices = GetDS4Controllers();
+                foreach (DS4Device device in devices)
                 {
-                    DS4Device device = devEnum.Current;
-                    //DS4Device device = devices.ElementAt(i);
                     device.StopUpdate();
-                    //device.runRemoval();
                     device.HidDevice.CloseDevice();
                 }
 
                 Devices.Clear();
                 DevicePaths.Clear();
-                deviceSerials.Clear();
+                DeviceSerials.Clear();
                 DisabledDevices.Clear();
             }
         }
 
         // Called when devices is diconnected, timed out or has input reading failure
-        public static void On_Removal(object sender, EventArgs e)
-        {
-            DS4Device device = (DS4Device)sender;
-            RemoveDevice(device);
-        }
+        public static void OnRemoval(object sender, EventArgs e) => RemoveDevice(sender as DS4Device);
 
         public static void RemoveDevice(DS4Device device)
         {
+            if (device is null)
+                return;
+
             lock (Devices)
             {
-                if (device != null)
-                {
-                    device.HidDevice.CloseDevice();
-                    Devices.Remove(device.HidDevice.DevicePath);
-                    DevicePaths.Remove(device.HidDevice.DevicePath);
-                    deviceSerials.Remove(device.MacAddress);
-                    //purgeHiddenExclusiveDevices();
-                }
+                device.HidDevice.CloseDevice();
+                Devices.Remove(device.HidDevice.DevicePath);
+                DevicePaths.Remove(device.HidDevice.DevicePath);
+                DeviceSerials.Remove(device.MacAddress);
             }
         }
 
@@ -254,25 +271,23 @@ namespace DS4Windows
                 if (device != null)
                 {
                     string devPath = device.HidDevice.DevicePath;
-                    string serial = device.getMacAddress();
+                    string serial = device.MacAddress;
                     if (Devices.ContainsKey(devPath))
                     {
-                        deviceSerials.Remove(serial);
+                        DeviceSerials.Remove(serial);
                         device.updateSerial();
-                        serial = device.getMacAddress();
-                        if (DS4Device.isValidSerial(serial))
-                        {
-                            deviceSerials.Add(serial);
-                        }
-
-                        if (device.ShouldRunCalib())
+                        serial = device.MacAddress;
+                        if (DS4Device.IsValidSerial(serial))
+                            DeviceSerials.Add(serial);
+                        
+                        if (device.ShouldRunCalib)
                             device.RefreshCalibration();
                     }
                 }
             }
         }
 
-        private static void purgeHiddenExclusiveDevices()
+        private static void PurgeHiddenExclusiveDevices()
         {
             int disabledDevCount = DisabledDevices.Count;
             if (disabledDevCount > 0)
@@ -313,37 +328,32 @@ namespace DS4Windows
             }
         }
 
-        public static void reEnableDevice(string deviceInstanceId)
+        public static void ReEnableDevice(string deviceInstanceId)
         {
-            bool success;
             Guid hidGuid = new Guid();
             NativeMethods.HidD_GetHidGuid(ref hidGuid);
             IntPtr deviceInfoSet = NativeMethods.SetupDiGetClassDevs(ref hidGuid, deviceInstanceId, 0, NativeMethods.DIGCF_PRESENT | NativeMethods.DIGCF_DEVICEINTERFACE);
             NativeMethods.SP_DEVINFO_DATA deviceInfoData = new NativeMethods.SP_DEVINFO_DATA();
             deviceInfoData.cbSize = Marshal.SizeOf(deviceInfoData);
-            success = NativeMethods.SetupDiEnumDeviceInfo(deviceInfoSet, 0, ref deviceInfoData);
-            if (!success)
-            {
-                throw new Exception("Error getting device info data, error code = " + Marshal.GetLastWin32Error());
-            }
-            success = NativeMethods.SetupDiEnumDeviceInfo(deviceInfoSet, 1, ref deviceInfoData); // Checks that we have a unique device
-            if (success)
-            {
-                throw new Exception("Can't find unique device");
-            }
 
+            if (!NativeMethods.SetupDiEnumDeviceInfo(deviceInfoSet, 0, ref deviceInfoData))
+                throw new Exception("Error getting device info data, error code = " + Marshal.GetLastWin32Error());
+            
+            // Check that we have a unique device
+            if (NativeMethods.SetupDiEnumDeviceInfo(deviceInfoSet, 1, ref deviceInfoData))
+                throw new Exception("Can't find unique device");
+            
             NativeMethods.SP_PROPCHANGE_PARAMS propChangeParams = new NativeMethods.SP_PROPCHANGE_PARAMS();
             propChangeParams.classInstallHeader.cbSize = Marshal.SizeOf(propChangeParams.classInstallHeader);
             propChangeParams.classInstallHeader.installFunction = NativeMethods.DIF_PROPERTYCHANGE;
             propChangeParams.stateChange = NativeMethods.DICS_DISABLE;
             propChangeParams.scope = NativeMethods.DICS_FLAG_GLOBAL;
             propChangeParams.hwProfile = 0;
-            success = NativeMethods.SetupDiSetClassInstallParams(deviceInfoSet, ref deviceInfoData, ref propChangeParams, Marshal.SizeOf(propChangeParams));
-            if (!success)
-            {
+
+            if (!NativeMethods.SetupDiSetClassInstallParams(deviceInfoSet, ref deviceInfoData, ref propChangeParams, Marshal.SizeOf(propChangeParams)))
                 throw new Exception("Error setting class install params, error code = " + Marshal.GetLastWin32Error());
-            }
-            success = NativeMethods.SetupDiCallClassInstaller(NativeMethods.DIF_PROPERTYCHANGE, deviceInfoSet, ref deviceInfoData);
+            
+            NativeMethods.SetupDiCallClassInstaller(NativeMethods.DIF_PROPERTYCHANGE, deviceInfoSet, ref deviceInfoData);
             // TEST: If previous SetupDiCallClassInstaller fails, just continue
             // otherwise device will likely get permanently disabled.
             /*if (!success)
@@ -352,37 +362,31 @@ namespace DS4Windows
             }
             */
 
-            //System.Threading.Thread.Sleep(50);
-            sw.Restart();
-            while (sw.ElapsedMilliseconds < 50)
+            Stopwatch.Restart();
+            while (Stopwatch.ElapsedMilliseconds < 50)
             {
                 // Use SpinWait to keep control of current thread. Using Sleep could potentially
                 // cause other events to get run out of order
                 System.Threading.Thread.SpinWait(100);
             }
-            sw.Stop();
+            Stopwatch.Stop();
 
             propChangeParams.stateChange = NativeMethods.DICS_ENABLE;
-            success = NativeMethods.SetupDiSetClassInstallParams(deviceInfoSet, ref deviceInfoData, ref propChangeParams, Marshal.SizeOf(propChangeParams));
-            if (!success)
-            {
-                throw new Exception("Error setting class install params, error code = " + Marshal.GetLastWin32Error());
-            }
-            success = NativeMethods.SetupDiCallClassInstaller(NativeMethods.DIF_PROPERTYCHANGE, deviceInfoSet, ref deviceInfoData);
-            if (!success)
-            {
-                throw new Exception("Error enabling device, error code = " + Marshal.GetLastWin32Error());
-            }
 
-            //System.Threading.Thread.Sleep(50);
-            sw.Restart();
-            while (sw.ElapsedMilliseconds < 50)
+            if (!NativeMethods.SetupDiSetClassInstallParams(deviceInfoSet, ref deviceInfoData, ref propChangeParams, Marshal.SizeOf(propChangeParams)))
+                throw new Exception("Error setting class install params, error code = " + Marshal.GetLastWin32Error());
+            
+            if (!NativeMethods.SetupDiCallClassInstaller(NativeMethods.DIF_PROPERTYCHANGE, deviceInfoSet, ref deviceInfoData))
+                throw new Exception("Error enabling device, error code = " + Marshal.GetLastWin32Error());
+            
+            Stopwatch.Restart();
+            while (Stopwatch.ElapsedMilliseconds < 50)
             {
                 // Use SpinWait to keep control of current thread. Using Sleep could potentially
                 // cause other events to get run out of order
                 System.Threading.Thread.SpinWait(100);
             }
-            sw.Stop();
+            Stopwatch.Stop();
 
             NativeMethods.SetupDiDestroyDeviceInfoList(deviceInfoSet);
         }

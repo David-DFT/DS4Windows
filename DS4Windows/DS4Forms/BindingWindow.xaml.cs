@@ -1,16 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
+using DS4Windows;
 using DS4WinWPF.DS4Forms.ViewModels;
 
 namespace DS4WinWPF.DS4Forms
@@ -27,7 +21,7 @@ namespace DS4WinWPF.DS4Forms
             new Dictionary<DS4Windows.X360Controls, Button>();
         private Dictionary<DS4Windows.X360Controls, Button> mouseBtnMap =
             new Dictionary<DS4Windows.X360Controls, Button>();
-        private BindingWindowViewModel bindingVM;
+        private BindingWindowViewModel BindingVM;
         private Button highlightBtn;
         private ExposeMode expose;
 
@@ -43,11 +37,11 @@ namespace DS4WinWPF.DS4Forms
             InitializeComponent();
 
             this.expose = expose;
-            bindingVM = new BindingWindowViewModel(deviceNum, settings);
+            BindingVM = new BindingWindowViewModel(deviceNum, settings);
 
             if (settings.control != DS4Windows.DS4Controls.None)
             {
-                Title = $"Select action for {DS4Windows.Global.ds4inputNames[settings.control]}";
+                Title = $"Select action for {DS4Windows.Global.DS4InputNames[settings.control]}";
             }
             else
             {
@@ -66,16 +60,16 @@ namespace DS4WinWPF.DS4Forms
             InitKeyBindings();
             InitInfoMaps();
 
-            if (!bindingVM.Using360Mode)
+            if (!BindingVM.Using360Mode)
             {
                 InitDS4Canvas();
             }
 
-            bindingVM.ActionBinding = bindingVM.CurrentOutBind;
+            BindingVM.ActionBinding = BindingVM.CurrentOutBind;
             if (expose == ExposeMode.Full)
             {
-                regBindRadio.IsChecked = !bindingVM.ShowShift;
-                shiftBindRadio.IsChecked = bindingVM.ShowShift;
+                regBindRadio.IsChecked = !BindingVM.ShowShift;
+                shiftBindRadio.IsChecked = BindingVM.ShowShift;
             }
             else
             {
@@ -119,15 +113,15 @@ namespace DS4WinWPF.DS4Forms
         private string GetControlString(Button button)
         {
             string result;
-            if (bindingVM.Using360Mode)
+            if (BindingVM.Using360Mode)
             {
                 DS4Windows.X360Controls xboxcontrol = associatedBindings[button].control;
-                result = DS4Windows.Global.xboxDefaultNames[xboxcontrol];
+                result = DS4Windows.Global.X360DefaultNames[xboxcontrol];
             }
             else
             {
                 DS4Windows.X360Controls xboxcontrol = associatedBindings[button].control;
-                result = DS4Windows.Global.ds4DefaultNames[xboxcontrol];
+                result = DS4Windows.Global.DS4DefaultNames[xboxcontrol];
             }
 
             return result;
@@ -142,7 +136,7 @@ namespace DS4WinWPF.DS4Forms
         private void OutputKeyBtn_Click(object sender, RoutedEventArgs e)
         {
             Button button = sender as Button;
-            OutBinding binding = bindingVM.ActionBinding;
+            OutBinding binding = BindingVM.ActionBinding;
             binding.outputType = OutBinding.OutType.Key;
             if (associatedBindings.TryGetValue(button, out BindAssociation bind))
             {
@@ -155,7 +149,7 @@ namespace DS4WinWPF.DS4Forms
 
         private void OutputButtonBtn_Click(object sender, RoutedEventArgs e)
         {
-            OutBinding binding = bindingVM.ActionBinding;
+            OutBinding binding = BindingVM.ActionBinding;
             DS4Windows.X360Controls defaultControl = DS4Windows.Global.defaultButtonMapping[(int)binding.input];
             Button button = sender as Button;
             if (associatedBindings.TryGetValue(button, out BindAssociation bind))
@@ -176,14 +170,14 @@ namespace DS4WinWPF.DS4Forms
 
         private void ChangeForCurrentAction()
         {
-            OutBinding bind = bindingVM.ActionBinding;
+            OutBinding bind = BindingVM.ActionBinding;
             topOptsPanel.DataContext = bind;
 
             if (expose == ExposeMode.Full)
             {
                 extrasGB.DataContext = bind;
                 modePanel.DataContext = bind;
-                shiftTriggerCombo.Visibility = bind.IsShift() ? Visibility.Visible : Visibility.Hidden;
+                shiftTriggerCombo.Visibility = bind.IsShift ? Visibility.Visible : Visibility.Hidden;
                 macroOnLb.DataContext = bind;
             }
 
@@ -197,7 +191,7 @@ namespace DS4WinWPF.DS4Forms
                 highlightBtn.Background = SystemColors.ControlBrush;
             }
 
-            OutBinding binding = bindingVM.ActionBinding;
+            OutBinding binding = BindingVM.ActionBinding;
             if (binding.outputType == OutBinding.OutType.Default)
             {
                 DS4Windows.X360Controls defaultBind = DS4Windows.Global.defaultButtonMapping[(int)binding.input];
@@ -783,7 +777,7 @@ namespace DS4WinWPF.DS4Forms
         {
             if (regBindRadio.IsChecked == true)
             {
-                bindingVM.ActionBinding = bindingVM.CurrentOutBind;
+                BindingVM.ActionBinding = BindingVM.CurrentOutBind;
                 ChangeForCurrentAction();
             }
         }
@@ -792,56 +786,62 @@ namespace DS4WinWPF.DS4Forms
         {
             if (shiftBindRadio.IsChecked == true)
             {
-                bindingVM.ActionBinding = bindingVM.ShiftOutBind;
+                BindingVM.ActionBinding = BindingVM.ShiftOutBind;
                 ChangeForCurrentAction();
             }
         }
 
         private void TestRumbleBtn_Click(object sender, RoutedEventArgs e)
         {
-            int deviceNum = bindingVM.DeviceNum;
-            if (deviceNum < 4)
+            int deviceNum = BindingVM.DeviceNum;
+            if (deviceNum >= App.RootHub.Controllers.Length || deviceNum < 0)
+                return;
+
+            DS4Device d = App.RootHub.Controllers[deviceNum].Device;
+            if (d is null)
+                return;
+            
+            if (!BindingVM.RumbleActive)
             {
-                DS4Windows.DS4Device d = App.rootHub.DS4Controllers[deviceNum];
-                if (d != null)
-                {
-                    if (!bindingVM.RumbleActive)
-                    {
-                        bindingVM.RumbleActive = true;
-                        d.setRumble((byte)Math.Min(255, bindingVM.ActionBinding.LightRumble),
-                            (byte)Math.Min(255, bindingVM.ActionBinding.HeavyRumble));
-                        testRumbleBtn.Content = Properties.Resources.StopText;
-                    }
-                    else
-                    {
-                        bindingVM.RumbleActive = false;
-                        d.setRumble(0, 0);
-                        testRumbleBtn.Content = Properties.Resources.TestText;
-                    }
-                }
+                BindingVM.RumbleActive = true;
+
+                d.SetRumble(
+                    (byte)Math.Min(255, BindingVM.ActionBinding.LightRumble), 
+                    (byte)Math.Min(255, BindingVM.ActionBinding.HeavyRumble));
+
+                testRumbleBtn.Content = Properties.Resources.StopText;
+            }
+            else
+            {
+                BindingVM.RumbleActive = false;
+                d.SetRumble(0, 0);
+
+                testRumbleBtn.Content = Properties.Resources.TestText;
             }
         }
 
         private void ExtrasColorChoosebtn_Click(object sender, RoutedEventArgs e)
         {
-            ColorPickerWindow dialog = new ColorPickerWindow();
-            dialog.Owner = Application.Current.MainWindow;
-            OutBinding actBind = bindingVM.ActionBinding;
+            ColorPickerWindow dialog = new ColorPickerWindow(Application.Current.MainWindow);
+
+            OutBinding actBind = BindingVM.ActionBinding;
             Color tempcolor = actBind.ExtrasColorMedia;
-            dialog.colorPicker.SelectedColor = tempcolor;
-            bindingVM.StartForcedColor(tempcolor);
-            dialog.ColorChanged += (sender2, color) =>
-            {
-                bindingVM.UpdateForcedColor(color);
-            };
+            dialog.ColorPicker.SelectedColor = tempcolor;
+            BindingVM.StartForcedColor(tempcolor);
+
+            dialog.ColorChanged += OnColorChanged;
+            
             dialog.ShowDialog();
-            bindingVM.EndForcedColor();
-            actBind.UpdateExtrasColor(dialog.colorPicker.SelectedColor.GetValueOrDefault());
+            BindingVM.EndForcedColor();
+            actBind.UpdateExtrasColor(dialog.ColorPicker.SelectedColor.GetValueOrDefault());
         }
 
+        private void OnColorChanged(ColorPickerWindow sender2, Color color)
+            => BindingVM.UpdateForcedColor(color);
+        
         private void DefaultBtn_Click(object sender, RoutedEventArgs e)
         {
-            OutBinding actBind = bindingVM.ActionBinding;
+            OutBinding actBind = BindingVM.ActionBinding;
 
             if (!actBind.shiftBind)
             {
@@ -858,7 +858,7 @@ namespace DS4WinWPF.DS4Forms
 
         private void UnboundBtn_Click(object sender, RoutedEventArgs e)
         {
-            OutBinding actBind = bindingVM.ActionBinding;
+            OutBinding actBind = BindingVM.ActionBinding;
             actBind.outputType = OutBinding.OutType.Button;
             actBind.control = DS4Windows.X360Controls.Unbound;
             Close();
@@ -866,35 +866,52 @@ namespace DS4WinWPF.DS4Forms
 
         private void RecordMacroBtn_Click(object sender, RoutedEventArgs e)
         {
-            RecordBox box = new RecordBox(bindingVM.DeviceNum, bindingVM.Settings,
-                bindingVM.ActionBinding.IsShift());
-            box.Visibility = Visibility.Visible;
+            RecordBox box = new RecordBox(BindingVM.DeviceNum, BindingVM.Settings, BindingVM.ActionBinding.IsShift);
             mapBindingPanel.Visibility = Visibility.Collapsed;
             extrasGB.IsEnabled = false;
-            fullPanel.Children.Add(box);
-            box.Cancel += (sender2, args) =>
-            {
-                box.Visibility = Visibility.Collapsed;
-                fullPanel.Children.Remove(box);
-                box = null;
-                mapBindingPanel.Visibility = Visibility.Visible;
-                extrasGB.IsEnabled = true;
-            };
 
-            box.Save += (sender2, args) =>
-            {
-                box.Visibility = Visibility.Collapsed;
-                fullPanel.Children.Remove(box);
-                box = null;
-                //mapBindingPanel.Visibility = Visibility.Visible;
-                bindingVM.PopulateCurrentBinds();
-                Close();
-            };
+            BindBox(box);
+        }
+
+        private void OnCancel(object sender, EventArgs args)
+        {
+            if (!(sender is RecordBox box))
+                return;
+
+            DisposeBox(box);
+
+            mapBindingPanel.Visibility = Visibility.Visible;
+            extrasGB.IsEnabled = true;
+        }
+        private void OnSave(object sender, EventArgs args)
+        {
+            if (!(sender is RecordBox box))
+                return;
+
+            DisposeBox(box);
+
+            BindingVM.PopulateCurrentBinds();
+            Close();
+        }
+
+        private void BindBox(RecordBox box)
+        {
+            box.Visibility = Visibility.Visible;
+            fullPanel.Children.Add(box);
+            box.Cancel += OnCancel;
+            box.Save += OnSave;
+        }
+        private void DisposeBox(RecordBox box)
+        {
+            box.Cancel -= OnCancel;
+            box.Save -= OnSave;
+            fullPanel.Children.Remove(box);
+            box.Visibility = Visibility.Collapsed;
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            bindingVM.WriteBinds();
+            BindingVM.WriteBinds();
         }
     }
 }

@@ -1,17 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using NonFormTimer = System.Timers.Timer;
 using DS4Windows;
 
@@ -174,12 +164,12 @@ namespace DS4WinWPF.DS4Forms
         {
             readingTimer.Stop();
 
-            DS4Device ds = Program.rootHub.DS4Controllers[deviceNum];
+            DS4Device ds = Program.RootHub.Controllers[deviceNum].Device;
             if (ds != null)
             {
-                DS4StateExposed exposeState = Program.rootHub.ExposedState[deviceNum];
-                DS4State baseState = Program.rootHub.getDS4State(deviceNum);
-                DS4State interState = Program.rootHub.getDS4StateTemp(deviceNum);
+                DS4StateExposed exposeState = Program.RootHub.Controllers[deviceNum].ExposedState;
+                DS4State baseState = Program.RootHub.GetDS4State(deviceNum);
+                DS4State interState = Program.RootHub.GetDS4StateTemp(deviceNum);
 
                 Dispatcher.Invoke(() =>
                 {
@@ -202,8 +192,8 @@ namespace DS4WinWPF.DS4Forms
                     Canvas.SetLeft(rsMapValRec, interState.RX / 255.0 * canvasWidth - 3);
                     Canvas.SetTop(rsMapValRec, interState.RY / 255.0 * canvasWidth - 3);
 
-                    x = exposeState.getAccelX() + 127;
-                    y = exposeState.getAccelZ() + 127;
+                    x = exposeState.AccelX + 127;
+                    y = exposeState.AccelZ + 127;
                     Canvas.SetLeft(sixAxisValRec, x / 255.0 * canvasWidth - 3);
                     Canvas.SetTop(sixAxisValRec, y / 255.0 * canvasWidth - 3);
                     Canvas.SetLeft(sixAxisMapValRec, Math.Min(Math.Max(interState.Motion.outputAccelX + 127.0, 0), 255.0) / 255.0 * canvasWidth - 3);
@@ -243,9 +233,9 @@ namespace DS4WinWPF.DS4Forms
                     gyroPitchSlider.Value = baseState.Motion.gyroPitchFull;
                     gyroRollSlider.Value = baseState.Motion.gyroRollFull;
 
-                    accelXSlider.Value = exposeState.getAccelX();
-                    accelYSlider.Value = exposeState.getAccelY();
-                    accelZSlider.Value = exposeState.getAccelZ();
+                    accelXSlider.Value = exposeState.AccelX;
+                    accelYSlider.Value = exposeState.AccelY;
+                    accelZSlider.Value = exposeState.AccelZ;
 
                     double latency = ds.Latency;
                     int warnInterval = ds.getWarnInterval();

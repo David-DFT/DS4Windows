@@ -54,19 +54,19 @@ namespace DS4Windows
         // Set or Get string representation of the bezier curve definition value (Note! Set doesn't initialize the lookup table. InitBezierCurve needs to be called to actually initalize the calculation)
         public string AsString
         {
-            get { return ($"{mX1}, {mY1}, {mX2}, {mY2}"); }
+            get => ($"{mX1}, {mY1}, {mX2}, {mY2}");
             set
             {
                 // Set bezier curve defintion from a string value (4 comma separated decimals). If any of the string values are invalid then set curve as linear "zero" curve
-                string[] bezierDef = value.Split(new Char[] { ',' }, 4);
-                if (bezierDef.Length < 4 || !Double.TryParse(bezierDef[0], out mX1) || !Double.TryParse(bezierDef[1], out mY1) || !Double.TryParse(bezierDef[2], out mX2) || !Double.TryParse(bezierDef[3], out mY2) )
+                string[] bezierDef = value.Split(new char[] { ',' }, 4);
+                if (bezierDef.Length < 4 || !double.TryParse(bezierDef[0], out mX1) || !double.TryParse(bezierDef[1], out mY1) || !double.TryParse(bezierDef[2], out mX2) || !double.TryParse(bezierDef[3], out mY2))
                     mX1 = mY1 = mX2 = mY2 = 0;
             }
         }
 
         // Custom definition set by DS4Windows options screens. This string is not validated (ie. the value is as user entered it and could be an invalid curve definition). This value is saved in a profile XML file.
         public string CustomDefinition { get; set; }
-        public override string ToString() { return this.CustomDefinition; }
+        public override string ToString() { return CustomDefinition; }
 
         public AxisType axisType;               // Axis type of curve object (LS/RS/R2/L2/SA)
         private double axisMaxDouble;           // Max range of axis (range of positive values)
@@ -83,9 +83,9 @@ namespace DS4Windows
         public bool InitBezierCurve(string bezierCurveDefinition, AxisType gamepadAxisType, bool setCustomDefinitionProperty = false)
         {
             if (setCustomDefinitionProperty)
-                this.CustomDefinition = bezierCurveDefinition;
+                CustomDefinition = bezierCurveDefinition;
 
-            this.AsString = bezierCurveDefinition;
+            AsString = bezierCurveDefinition;
             return InitBezierCurve(mX1, mY1, mX2, mY2, gamepadAxisType);
         }
 
@@ -160,9 +160,9 @@ namespace DS4Windows
 
             try
             {
-                arraySampleValues = new double[BezierCurve.kSplineTableSize];
-                for (int idx = 0; idx < BezierCurve.kSplineTableSize; idx++)
-                    arraySampleValues[idx] = CalcBezier(idx * BezierCurve.kSampleStepSize, mX1, mX2);
+                arraySampleValues = new double[kSplineTableSize];
+                for (int idx = 0; idx < kSplineTableSize; idx++)
+                    arraySampleValues[idx] = CalcBezier(idx * kSampleStepSize, mX1, mX2);
 
                 // Pre-populate lookup result table for GetBezierEasing function (performance optimization)
                 for (byte idx = 0; idx <= (byte)axisMaxDouble; idx++)
@@ -203,7 +203,7 @@ namespace DS4Windows
                 arrayBezierLUT[idx + (byte)axisCenterPosDouble] = (byte)(output * axisMaxDouble + axisCenterPosDouble);
 
                 // Invert curve from a right side of the center position (128) to the left tilted stick axis (or from up tilt to down tilt)
-                if (this.axisType == AxisType.LSRS)
+                if (axisType == AxisType.LSRS)
                     arrayBezierLUT[127 - idx] = (byte)(255 - arrayBezierLUT[idx + (byte)axisCenterPosDouble]);
 
                 // If the axisMaxDouble is 255 then we need this to break the look (byte is unsigned 0..255, so the FOR loop never reaches 256 idx value. C# would throw an overflow exceptio)
@@ -221,7 +221,7 @@ namespace DS4Windows
                 arrayBezierLUT[idx + (byte)axisCenterPosDouble] = (byte)((temp * temp * axisMaxDouble) + axisCenterPosDouble);
 
                 // Invert curve from a right side of the center position (128) to the left tilted stick axis (or from up tilt to down tilt)
-                if (this.axisType == AxisType.LSRS)
+                if (axisType == AxisType.LSRS)
                     arrayBezierLUT[127 - idx] = (byte)(255 - arrayBezierLUT[idx + (byte)axisCenterPosDouble]);
 
                 // If the axisMaxDouble is 255 then we need this to break the look (byte is unsigned 0..255, so the FOR loop never reaches 256 idx value. C# would throw an overflow exceptio)
@@ -239,7 +239,7 @@ namespace DS4Windows
                 arrayBezierLUT[idx + (byte)axisCenterPosDouble] = (byte)((temp * temp * temp * axisMaxDouble) + axisCenterPosDouble);
 
                 // Invert curve from a right side of the center position (128) to the left tilted stick axis (or from up tilt to down tilt)
-                if (this.axisType == AxisType.LSRS)
+                if (axisType == AxisType.LSRS)
                     arrayBezierLUT[127 - idx] = (byte)(255 - arrayBezierLUT[idx + (byte)axisCenterPosDouble]);
 
                 // If the axisMaxDouble is 255 then we need this to break the look (byte is unsigned 0..255, so the FOR loop never reaches 256 idx value. C# would throw an overflow exceptio)
@@ -258,7 +258,7 @@ namespace DS4Windows
                 arrayBezierLUT[idx + (byte)axisCenterPosDouble] = (byte)((-1.0 * output * axisMaxDouble) + axisCenterPosDouble);
 
                 // Invert curve from a right side of the center position (128) to the left tilted stick axis (or from up tilt to down tilt)
-                if (this.axisType == AxisType.LSRS)
+                if (axisType == AxisType.LSRS)
                     arrayBezierLUT[127 - idx] = (byte)(255 - arrayBezierLUT[idx + (byte)axisCenterPosDouble]);
 
                 // If the axisMaxDouble is 255 then we need this to break the look (byte is unsigned 0..255, so the FOR loop never reaches 256 idx value. C# would throw an overflow exceptio)
@@ -277,7 +277,7 @@ namespace DS4Windows
                 arrayBezierLUT[idx + (byte)axisCenterPosDouble] = (byte)((1.0 * output * axisMaxDouble) + axisCenterPosDouble);
 
                 // Invert curve from a right side of the center position (128) to the left tilted stick axis (or from up tilt to down tilt)
-                if (this.axisType == AxisType.LSRS)
+                if (axisType == AxisType.LSRS)
                     arrayBezierLUT[127 - idx] = (byte)(255 - arrayBezierLUT[idx + (byte)axisCenterPosDouble]);
 
                 // If the axisMaxDouble is 255 then we need this to break the look (byte is unsigned 0..255, so the FOR loop never reaches 256 idx value. C# would throw an overflow exceptio)
@@ -343,7 +343,7 @@ namespace DS4Windows
 
         private double newtonRaphsonIterate(double aX, double aGuessT /*, double mX1, double mX2*/)
         {
-            for (int i = 0; i < BezierCurve.NEWTON_ITERATIONS; ++i)
+            for (int i = 0; i < NEWTON_ITERATIONS; ++i)
             {
                 double currentSlope = getSlope(aGuessT, mX1, mX2);
                 if (currentSlope == 0.0)
@@ -371,7 +371,7 @@ namespace DS4Windows
                 {
                     aA = currentT;
                 }
-            } while (Math.Abs(currentX) > BezierCurve.SUBDIVISION_PRECISION && ++i < BezierCurve.SUBDIVISION_MAX_ITERATIONS);
+            } while (Math.Abs(currentX) > SUBDIVISION_PRECISION && ++i < SUBDIVISION_MAX_ITERATIONS);
 
             return currentT;
         }

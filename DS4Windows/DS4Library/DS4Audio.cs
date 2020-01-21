@@ -90,7 +90,7 @@ namespace DS4Windows.DS4Library
             int numProperties;
             Marshal.ThrowExceptionForHR(propertyStore.GetCount(out numProperties));
 
-            string deviceName = String.Empty;
+            string deviceName = string.Empty;
 
             for (int propertyNum = 0; propertyNum < numProperties; ++propertyNum)
             {
@@ -249,7 +249,7 @@ namespace DS4Windows.DS4Library.CoreAudio
         int SetChannelVolumeLevelScalar(uint nChannel, float fLevel, ref Guid pguidEventContext);
         int GetChannelVolumeLevel(uint nChannel, out float pfLevelDB);
         int GetChannelVolumeLevelScalar(uint nChannel, out float pfLevel);
-        int SetMute([MarshalAs(UnmanagedType.Bool)] Boolean bMute, ref Guid pguidEventContext);
+        int SetMute([MarshalAs(UnmanagedType.Bool)] bool bMute, ref Guid pguidEventContext);
         int GetMute(out bool pbMute);
         int GetVolumeStepInfo(out uint pnStep, out uint pnStepCount);
         int VolumeStepUp(ref Guid pguidEventContext);

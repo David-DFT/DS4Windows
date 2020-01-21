@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Input;
 using DS4Windows;
 
@@ -31,7 +28,7 @@ namespace DS4WinWPF.DS4Forms.ViewModels
         private Dictionary<DS4Controls, MappedControl> controlMap = new Dictionary<DS4Controls, MappedControl>();
         public Dictionary<DS4Controls, MappedControl> ControlMap { get => controlMap; }
 
-        public MappingListViewModel(int devIndex, OutContType devType)
+        public MappingListViewModel(int devIndex, OutControllerType devType)
         {
             mappings.Add(new MappedControl(devIndex, DS4Controls.Cross, "Cross",  devType));
             mappings.Add(new MappedControl(devIndex, DS4Controls.Circle, "Circle", devType));
@@ -81,7 +78,7 @@ namespace DS4WinWPF.DS4Forms.ViewModels
             }
         }
 
-        public void UpdateMappingDevType(OutContType devType)
+        public void UpdateMappingDevType(OutControllerType devType)
         {
             foreach(MappedControl mapped in mappings)
             {
@@ -101,7 +98,7 @@ namespace DS4WinWPF.DS4Forms.ViewModels
     public class MappedControl
     {
         private int devIndex;
-        private OutContType devType;
+        private OutControllerType devType;
         private DS4Controls control;
         private DS4ControlSettings setting;
         private string controlName;
@@ -113,7 +110,7 @@ namespace DS4WinWPF.DS4Forms.ViewModels
         public DS4ControlSettings Setting { get => setting; }
         public string ControlName { get => controlName; }
         public string MappingName { get => mappingName; }
-        public OutContType DevType
+        public OutControllerType DevType
         {
             get => devType;
             set
@@ -130,7 +127,7 @@ namespace DS4WinWPF.DS4Forms.ViewModels
         public event EventHandler MappingNameChanged;
 
         public MappedControl(int devIndex, DS4Controls control, string controlName,
-            OutContType devType, bool initMap=false)
+            OutControllerType devType, bool initMap=false)
         {
             this.devIndex = devIndex;
             this.devType = devType;
@@ -191,7 +188,7 @@ namespace DS4WinWPF.DS4Forms.ViewModels
                 else if (action is X360Controls)
                 {
                     string tag;
-                    tag = Global.getX360ControlString((X360Controls)action, devType);
+                    tag = Global.GetX360ControlString((X360Controls)action, devType);
                     temp = tag;
                 }
                 else if (action is string)
@@ -202,11 +199,11 @@ namespace DS4WinWPF.DS4Forms.ViewModels
                 }
                 else
                 {
-                    temp = Global.getX360ControlString(Global.defaultButtonMapping[(int)control], devType);
+                    temp = Global.GetX360ControlString(Global.defaultButtonMapping[(int)control], devType);
                 }
             }
             else if (!extra && !shift)
-                temp = Global.getX360ControlString(Global.defaultButtonMapping[(int)control], devType);
+                temp = Global.GetX360ControlString(Global.defaultButtonMapping[(int)control], devType);
             else if (shift)
                 temp = "";
 

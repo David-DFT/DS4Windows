@@ -1,18 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using Microsoft.Win32;
 using NonFormTimer = System.Timers.Timer;
 using DS4WinWPF.DS4Forms.ViewModels;
@@ -32,7 +24,7 @@ namespace DS4WinWPF.DS4Forms
         }
 
         private int deviceNum;
-        private ProfileSettingsViewModel profileSettingsVM;
+        private ProfileSettingsViewModel ProfileSettingsVM;
         private MappingListViewModel mappingListVM;
         private ProfileEntity currentProfile;
         private SpecialActionsListViewModel specialActionsVM;
@@ -41,8 +33,7 @@ namespace DS4WinWPF.DS4Forms
         public delegate void CreatedProfileHandler(ProfileEditor sender, string profile);
         public event CreatedProfileHandler CreatedProfile;
 
-        private Dictionary<Button, ImageBrush> hoverImages =
-            new Dictionary<Button, ImageBrush>();
+        private Dictionary<Button, ImageBrush> hoverImages = new Dictionary<Button, ImageBrush>();
         private Dictionary<Button, HoverImageInfo> hoverLocations = new Dictionary<Button, HoverImageInfo>();
         private Dictionary<Button, int> hoverIndexes = new Dictionary<Button, int>();
         private Dictionary<int, Button> reverseHoverIndexes = new Dictionary<int, Button>();
@@ -62,10 +53,10 @@ namespace DS4WinWPF.DS4Forms
 
             deviceNum = device;
             emptyColorGB.Visibility = Visibility.Collapsed;
-            profileSettingsVM = new ProfileSettingsViewModel(device);
+            ProfileSettingsVM = new ProfileSettingsViewModel(device);
             picBoxHover.Visibility = Visibility.Hidden;
             picBoxHover2.Visibility = Visibility.Hidden;
-            bool touchMouse = profileSettingsVM.UseTouchMouse;
+            bool touchMouse = ProfileSettingsVM.UseTouchMouse;
             if (!touchMouse)
             {
                 useMousePanel.Visibility = Visibility.Collapsed;
@@ -81,7 +72,7 @@ namespace DS4WinWPF.DS4Forms
             activeTouchPanel = touchMouse ? useMousePanel : useControlsPanel;
             //activeTouchPanel = useMousePanel;
 
-            switch (profileSettingsVM.GyroOutModeIndex)
+            switch (ProfileSettingsVM.GyroOutModeIndex)
             {
                 case 0:
                     activeGyroModePanel = gyroControlsPanel; break;
@@ -99,7 +90,7 @@ namespace DS4WinWPF.DS4Forms
             gyroMouseJoystickPanel.Visibility = Visibility.Collapsed;
             activeGyroModePanel.Visibility = Visibility.Visible;
 
-            mappingListVM = new MappingListViewModel(deviceNum, profileSettingsVM.ContType);
+            mappingListVM = new MappingListViewModel(deviceNum, ProfileSettingsVM.ContType);
             specialActionsVM = new SpecialActionsListViewModel(device);
 
             RemoveHoverBtnText();
@@ -123,58 +114,58 @@ namespace DS4WinWPF.DS4Forms
             outConTypeCombo.SelectionChanged += OutConTypeCombo_SelectionChanged;
             mappingListBox.SelectionChanged += MappingListBox_SelectionChanged;
             Closed += ProfileEditor_Closed;
-            profileSettingsVM.LSDeadZoneChanged += UpdateReadingsLsDeadZone;
-            profileSettingsVM.RSDeadZoneChanged += UpdateReadingsRsDeadZone;
-            profileSettingsVM.L2DeadZoneChanged += UpdateReadingsL2DeadZone;
-            profileSettingsVM.R2DeadZoneChanged += UpdateReadingsR2DeadZone;
-            profileSettingsVM.SXDeadZoneChanged += UpdateReadingsSXDeadZone;
-            profileSettingsVM.SZDeadZoneChanged += UpdateReadingsSZDeadZone;
+            ProfileSettingsVM.LSDeadZoneChanged += UpdateReadingsLsDeadZone;
+            ProfileSettingsVM.RSDeadZoneChanged += UpdateReadingsRsDeadZone;
+            ProfileSettingsVM.L2DeadZoneChanged += UpdateReadingsL2DeadZone;
+            ProfileSettingsVM.R2DeadZoneChanged += UpdateReadingsR2DeadZone;
+            ProfileSettingsVM.SXDeadZoneChanged += UpdateReadingsSXDeadZone;
+            ProfileSettingsVM.SZDeadZoneChanged += UpdateReadingsSZDeadZone;
         }
 
         private void UpdateReadingsSZDeadZone(object sender, EventArgs e)
         {
-            conReadingsUserCon.SixAxisZDead = profileSettingsVM.SZDeadZone;
+            conReadingsUserCon.SixAxisZDead = ProfileSettingsVM.SZDeadZone;
         }
 
         private void UpdateReadingsSXDeadZone(object sender, EventArgs e)
         {
-            conReadingsUserCon.SixAxisXDead = profileSettingsVM.SXDeadZone;
+            conReadingsUserCon.SixAxisXDead = ProfileSettingsVM.SXDeadZone;
         }
 
         private void UpdateReadingsR2DeadZone(object sender, EventArgs e)
         {
-            conReadingsUserCon.R2Dead = profileSettingsVM.R2DeadZone;
+            conReadingsUserCon.R2Dead = ProfileSettingsVM.R2DeadZone;
         }
 
         private void UpdateReadingsL2DeadZone(object sender, EventArgs e)
         {
-            conReadingsUserCon.L2Dead = profileSettingsVM.L2DeadZone;
+            conReadingsUserCon.L2Dead = ProfileSettingsVM.L2DeadZone;
         }
 
         private void UpdateReadingsRsDeadZone(object sender, EventArgs e)
         {
-            conReadingsUserCon.RsDead = profileSettingsVM.RSDeadZone;
+            conReadingsUserCon.RsDead = ProfileSettingsVM.RSDeadZone;
         }
 
         private void UpdateReadingsLsDeadZone(object sender, EventArgs e)
         {
-            conReadingsUserCon.LsDead = profileSettingsVM.LSDeadZone;
+            conReadingsUserCon.LsDead = ProfileSettingsVM.LSDeadZone;
         }
 
         private void AssignTiltAssociation()
         {
-            gyroZNLb.DataContext = mappingListVM.ControlMap[DS4Windows.DS4Controls.GyroZNeg];
-            gyroZPLb.DataContext = mappingListVM.ControlMap[DS4Windows.DS4Controls.GyroZPos];
-            gyroXNLb.DataContext = mappingListVM.ControlMap[DS4Windows.DS4Controls.GyroXNeg];
-            gyroXLb.DataContext = mappingListVM.ControlMap[DS4Windows.DS4Controls.GyroXPos];
+            gyroZNLb.DataContext = mappingListVM.ControlMap[DS4Controls.GyroZNeg];
+            gyroZPLb.DataContext = mappingListVM.ControlMap[DS4Controls.GyroZPos];
+            gyroXNLb.DataContext = mappingListVM.ControlMap[DS4Controls.GyroXNeg];
+            gyroXLb.DataContext = mappingListVM.ControlMap[DS4Controls.GyroXPos];
         }
 
         private void AssignSwipeAssociation()
         {
-            swipeUpLb.DataContext = mappingListVM.ControlMap[DS4Windows.DS4Controls.SwipeUp];
-            swipeDownLb.DataContext = mappingListVM.ControlMap[DS4Windows.DS4Controls.SwipeDown];
-            swipeLeftLb.DataContext = mappingListVM.ControlMap[DS4Windows.DS4Controls.SwipeLeft];
-            swipeRightLb.DataContext = mappingListVM.ControlMap[DS4Windows.DS4Controls.SwipeRight];
+            swipeUpLb.DataContext = mappingListVM.ControlMap[DS4Controls.SwipeUp];
+            swipeDownLb.DataContext = mappingListVM.ControlMap[DS4Controls.SwipeDown];
+            swipeLeftLb.DataContext = mappingListVM.ControlMap[DS4Controls.SwipeLeft];
+            swipeRightLb.DataContext = mappingListVM.ControlMap[DS4Controls.SwipeRight];
         }
 
         private void MappingListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -514,13 +505,13 @@ namespace DS4WinWPF.DS4Forms
                     Global.ProfilePath[4] = profile.Name;
                 }
 
-                Global.LoadProfile(device, false, App.rootHub);
+                Global.LoadProfile(device, false, App.RootHub);
                 profileNameTxt.Text = profile.Name;
             }
             else
             {
                 currentProfile = null;
-                Global.LoadBlankDevProfile(device, false, App.rootHub, false);
+                Global.LoadBlankDevProfile(device, false, App.RootHub, false);
             }
 
             if (device < 4)
@@ -538,24 +529,24 @@ namespace DS4WinWPF.DS4Forms
 
             specialActionsVM.LoadActions(currentProfile == null);
             mappingListVM.UpdateMappings();
-            profileSettingsVM.UpdateLateProperties();
-            profileSettingsVM.PopulateTouchDisInver(touchDisInvertBtn.ContextMenu);
-            profileSettingsVM.PopulateGyroMouseTrig(gyroMouseTrigBtn.ContextMenu);
-            profileSettingsVM.PopulateGyroMouseStickTrig(gyroMouseStickTrigBtn.ContextMenu);
-            profileSettingsTabCon.DataContext = profileSettingsVM;
-            touchpadSettingsPanel.DataContext = profileSettingsVM;
+            ProfileSettingsVM.UpdateLateProperties();
+            ProfileSettingsVM.PopulateTouchDisInver(touchDisInvertBtn.ContextMenu);
+            ProfileSettingsVM.PopulateGyroMouseTrig(gyroMouseTrigBtn.ContextMenu);
+            ProfileSettingsVM.PopulateGyroMouseStickTrig(gyroMouseStickTrigBtn.ContextMenu);
+            profileSettingsTabCon.DataContext = ProfileSettingsVM;
+            touchpadSettingsPanel.DataContext = ProfileSettingsVM;
             mappingListBox.DataContext = mappingListVM;
             specialActionsTab.DataContext = specialActionsVM;
-            lightbarRect.DataContext = profileSettingsVM;
+            lightbarRect.DataContext = ProfileSettingsVM;
 
-            conReadingsUserCon.LsDead = profileSettingsVM.LSDeadZone;
-            conReadingsUserCon.RsDead = profileSettingsVM.RSDeadZone;
-            conReadingsUserCon.L2Dead = profileSettingsVM.L2DeadZone;
-            conReadingsUserCon.R2Dead = profileSettingsVM.R2DeadZone;
-            conReadingsUserCon.SixAxisXDead = profileSettingsVM.SXDeadZone;
-            conReadingsUserCon.SixAxisZDead = profileSettingsVM.SZDeadZone;
+            conReadingsUserCon.LsDead = ProfileSettingsVM.LSDeadZone;
+            conReadingsUserCon.RsDead = ProfileSettingsVM.RSDeadZone;
+            conReadingsUserCon.L2Dead = ProfileSettingsVM.L2DeadZone;
+            conReadingsUserCon.R2Dead = ProfileSettingsVM.R2DeadZone;
+            conReadingsUserCon.SixAxisXDead = ProfileSettingsVM.SXDeadZone;
+            conReadingsUserCon.SixAxisZDead = ProfileSettingsVM.SZDeadZone;
 
-            if (profileSettingsVM.UseControllerReadout)
+            if (ProfileSettingsVM.UseControllerReadout)
             {
                 inputTimer.Start();
             }
@@ -563,12 +554,12 @@ namespace DS4WinWPF.DS4Forms
 
         private void CancelBtn_Click(object sender, RoutedEventArgs e)
         {
-            if (profileSettingsVM.FuncDevNum < 4)
+            if (ProfileSettingsVM.FuncDevNum < 4)
             {
-                App.rootHub.setRumble(0, 0, profileSettingsVM.FuncDevNum);
+                App.RootHub.SetRumble(0, 0, ProfileSettingsVM.FuncDevNum);
             }
-            DS4Windows.Global.outDevTypeTemp[deviceNum] = DS4Windows.OutContType.X360;
-            DS4Windows.Global.LoadProfile(deviceNum, false, App.rootHub);
+            Global.outDevTypeTemp[deviceNum] = OutControllerType.X360;
+            Global.LoadProfile(deviceNum, false, App.RootHub);
             Closed?.Invoke(this, EventArgs.Empty);
         }
 
@@ -576,7 +567,7 @@ namespace DS4WinWPF.DS4Forms
         {
             MappedControl mpControl = mappingListVM.Mappings[mappingListVM.SelectedIndex];
             BindingWindow window = new BindingWindow(deviceNum, mpControl.Setting);
-            window.Owner = App.Current.MainWindow;
+            window.Owner = Application.Current.MainWindow;
             window.ShowDialog();
             mpControl.UpdateMappingName();
             UpdateHighlightLabel(mpControl);
@@ -646,7 +637,7 @@ namespace DS4WinWPF.DS4Forms
             activeTouchPanel.Visibility = Visibility.Collapsed;
             useMousePanel.Visibility = Visibility.Visible;
             activeTouchPanel = useMousePanel;
-            profileSettingsVM.UseTouchMouse = true;
+            ProfileSettingsVM.UseTouchMouse = true;
         }
 
         private void UseTouchControlsRadio_Click(object sender, RoutedEventArgs e)
@@ -654,7 +645,7 @@ namespace DS4WinWPF.DS4Forms
             activeTouchPanel.Visibility = Visibility.Collapsed;
             useControlsPanel.Visibility = Visibility.Visible;
             activeTouchPanel = useControlsPanel;
-            profileSettingsVM.UseTouchMouse = false;
+            ProfileSettingsVM.UseTouchMouse = false;
         }
 
         private void GyroOutModeCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -681,23 +672,23 @@ namespace DS4WinWPF.DS4Forms
 
                 if (deviceNum < 4)
                 {
-                    App.rootHub.touchPad[deviceNum]?.ResetToggleGyroM();
+                    App.RootHub.Controllers[deviceNum].TouchPad?.ResetToggleGyroM();
                 }
             }
         }
 
         private void SetLateProperties()
         {
-            DS4Windows.Global.BTPollRate[deviceNum] = profileSettingsVM.TempBTPollRateIndex;
-            DS4Windows.Global.OutContType[deviceNum] = profileSettingsVM.TempConType;
-            DS4Windows.Global.outDevTypeTemp[deviceNum] = DS4Windows.OutContType.X360;
+            Global.BTPollRate[deviceNum] = ProfileSettingsVM.TempBTPollRateIndex;
+            Global.OutContType[deviceNum] = ProfileSettingsVM.TempConType;
+            Global.outDevTypeTemp[deviceNum] = OutControllerType.X360;
         }
 
         private void SaveBtn_Click(object sender, RoutedEventArgs e)
         {
-            if (profileSettingsVM.FuncDevNum < 4)
+            if (ProfileSettingsVM.FuncDevNum < 4)
             {
-                App.rootHub.setRumble(0, 0, profileSettingsVM.FuncDevNum);
+                App.RootHub.SetRumble(0, 0, ProfileSettingsVM.FuncDevNum);
             }
 
             string temp = profileNameTxt.Text;
@@ -705,8 +696,8 @@ namespace DS4WinWPF.DS4Forms
                 temp.IndexOfAny(System.IO.Path.GetInvalidFileNameChars()) == -1)
             {
                 SetLateProperties();
-                DS4Windows.Global.ProfilePath[deviceNum] =
-                    DS4Windows.Global.OlderProfilePath[deviceNum] = temp;
+                Global.ProfilePath[deviceNum] =
+                    Global.OlderProfilePath[deviceNum] = temp;
 
                 if (currentProfile != null)
                 {
@@ -759,22 +750,16 @@ namespace DS4WinWPF.DS4Forms
 
         public void Close()
         {
-            if (profileSettingsVM.FuncDevNum < 4)
-            {
-                App.rootHub.setRumble(0, 0, profileSettingsVM.FuncDevNum);
-            }
-
+            App.RootHub.SetRumble(0, 0, ProfileSettingsVM.FuncDevNum);
             Closed?.Invoke(this, EventArgs.Empty);
         }
 
         private void ColorByBatteryPerCk_Click(object sender, RoutedEventArgs e)
-        {
-            ColorByBatteryPerCheck();
-        }
+            => ColorByBatteryPerCheck();
 
         private void ColorByBatteryPerCheck()
         {
-            bool state = profileSettingsVM.ColorBatteryPercent;
+            bool state = ProfileSettingsVM.ColorBatteryPercent;
             if (state)
             {
                 colorGB.Header = Translations.Strings.Full;
@@ -787,58 +772,54 @@ namespace DS4WinWPF.DS4Forms
             }
         }
 
-        private void FlashColorBtn_Click(object sender, RoutedEventArgs e)
+        private void FlashColorBtn_Click(object sender, RoutedEventArgs e) 
+            => ProfileSettingsVM.UpdateFlashColor(EditColor(ProfileSettingsVM.FlashColorMedia));
+        private void LowColorBtn_Click(object sender, RoutedEventArgs e)
+            => ProfileSettingsVM.UpdateLowColor(EditColor(ProfileSettingsVM.LowColorMedia));
+        private void ChargingColorBtn_Click(object sender, RoutedEventArgs e) 
+            => ProfileSettingsVM.UpdateChargingColor(EditColor(ProfileSettingsVM.ChargingColorMedia));
+        private void Ds4LightbarColorBtn_Click(object sender, RoutedEventArgs e)
+            => ProfileSettingsVM.UpdateMainColor(EditColor(ProfileSettingsVM.MainColor));
+
+        private Color EditColor(Color color)
         {
-            ColorPickerWindow dialog = new ColorPickerWindow();
-            dialog.Owner = Application.Current.MainWindow;
-            Color tempcolor = profileSettingsVM.FlashColorMedia;
-            dialog.colorPicker.SelectedColor = tempcolor;
-            profileSettingsVM.StartForcedColor(tempcolor);
-            dialog.ColorChanged += (sender2, color) =>
-            {
-                profileSettingsVM.UpdateForcedColor(color);
-            };
+            ColorPickerWindow dialog = new ColorPickerWindow(Application.Current.MainWindow);
+
+            dialog.ColorPicker.SelectedColor = color;
+            ProfileSettingsVM.StartForcedColor(color);
+
+            dialog.ColorChanged += OnColorChanged;
             dialog.ShowDialog();
-            profileSettingsVM.EndForcedColor();
-            profileSettingsVM.UpdateFlashColor(dialog.colorPicker.SelectedColor.GetValueOrDefault());
+            dialog.ColorChanged -= OnColorChanged;
+
+            ProfileSettingsVM.EndForcedColor();
+
+            return dialog.ColorPicker.SelectedColor.GetValueOrDefault();
         }
 
-        private void LowColorBtn_Click(object sender, RoutedEventArgs e)
-        {
-            ColorPickerWindow dialog = new ColorPickerWindow();
-            dialog.Owner = Application.Current.MainWindow;
-            Color tempcolor = profileSettingsVM.LowColorMedia;
-            dialog.colorPicker.SelectedColor = tempcolor;
-            profileSettingsVM.StartForcedColor(tempcolor);
-            dialog.ColorChanged += (sender2, color) =>
-            {
-                profileSettingsVM.UpdateForcedColor(color);
-            };
-            dialog.ShowDialog();
-            profileSettingsVM.EndForcedColor();
-            profileSettingsVM.UpdateLowColor(dialog.colorPicker.SelectedColor.GetValueOrDefault());
-        }
+        private void OnColorChanged(ColorPickerWindow sender, Color color)
+            => ProfileSettingsVM.UpdateForcedColor(color);
 
         private void HeavyRumbleTestBtn_Click(object sender, RoutedEventArgs e)
         {
-            int deviceNum = profileSettingsVM.FuncDevNum;
+            int deviceNum = ProfileSettingsVM.FuncDevNum;
             if (deviceNum < 4)
             {
-                DS4Device d = App.rootHub.DS4Controllers[deviceNum];
+                DS4Device d = App.RootHub.Controllers[deviceNum].Device;
                 if (d != null)
                 {
-                    bool rumbleActive = profileSettingsVM.HeavyRumbleActive;
+                    bool rumbleActive = ProfileSettingsVM.HeavyRumbleActive;
                     if (!rumbleActive)
                     {
-                        profileSettingsVM.HeavyRumbleActive = true;
-                        d.setRumble(d.LeftHeavySlowRumble,
-                            (byte)Math.Min(255, 255 * profileSettingsVM.RumbleBoost / 100));
+                        ProfileSettingsVM.HeavyRumbleActive = true;
+                        d.SetRumble(d.LeftHeavySlowRumble,
+                            (byte)Math.Min(255, 255 * ProfileSettingsVM.RumbleBoost / 100));
                         heavyRumbleTestBtn.Content = Properties.Resources.StopHText;
                     }
                     else
                     {
-                        profileSettingsVM.HeavyRumbleActive = false;
-                        d.setRumble(0, 0);
+                        ProfileSettingsVM.HeavyRumbleActive = false;
+                        d.SetRumble(0, 0);
                         heavyRumbleTestBtn.Content = Properties.Resources.TestHText;
                     }
                 }
@@ -847,24 +828,24 @@ namespace DS4WinWPF.DS4Forms
 
         private void LightRumbleTestBtn_Click(object sender, RoutedEventArgs e)
         {
-            int deviceNum = profileSettingsVM.FuncDevNum;
+            int deviceNum = ProfileSettingsVM.FuncDevNum;
             if (deviceNum < 4)
             {
-                DS4Device d = App.rootHub.DS4Controllers[deviceNum];
+                DS4Device d = App.RootHub.Controllers[deviceNum].Device;
                 if (d != null)
                 {
-                    bool rumbleActive = profileSettingsVM.LightRumbleActive;
+                    bool rumbleActive = ProfileSettingsVM.LightRumbleActive;
                     if (!rumbleActive)
                     {
-                        profileSettingsVM.LightRumbleActive = true;
-                        d.setRumble((byte)Math.Min(255, 255 * profileSettingsVM.RumbleBoost / 100),
+                        ProfileSettingsVM.LightRumbleActive = true;
+                        d.SetRumble((byte)Math.Min(255, 255 * ProfileSettingsVM.RumbleBoost / 100),
                             d.RightLightFastRumble);
                         lightRumbleTestBtn.Content = Properties.Resources.StopLText;
                     }
                     else
                     {
-                        profileSettingsVM.LightRumbleActive = false;
-                        d.setRumble(0, 0);
+                        ProfileSettingsVM.LightRumbleActive = false;
+                        d.SetRumble(0, 0);
                         lightRumbleTestBtn.Content = Properties.Resources.TestLText;
                     }
                 }
@@ -875,17 +856,17 @@ namespace DS4WinWPF.DS4Forms
         {
             Button btn = sender as Button;
             string tag = btn.Tag.ToString();
-            if (tag == "LS") LaunchCurveEditor(profileSettingsVM.LSCustomCurve);
-            else if (tag == "RS") LaunchCurveEditor(profileSettingsVM.RSCustomCurve);
-            else if (tag == "L2") LaunchCurveEditor(profileSettingsVM.L2CustomCurve);
-            else if (tag == "R2") LaunchCurveEditor(profileSettingsVM.R2CustomCurve);
-            else if (tag == "SX") LaunchCurveEditor(profileSettingsVM.SXCustomCurve);
-            else if (tag == "SZ") LaunchCurveEditor(profileSettingsVM.SZCustomCurve);
+            if (tag == "LS") LaunchCurveEditor(ProfileSettingsVM.LSCustomCurve);
+            else if (tag == "RS") LaunchCurveEditor(ProfileSettingsVM.RSCustomCurve);
+            else if (tag == "L2") LaunchCurveEditor(ProfileSettingsVM.L2CustomCurve);
+            else if (tag == "R2") LaunchCurveEditor(ProfileSettingsVM.R2CustomCurve);
+            else if (tag == "SX") LaunchCurveEditor(ProfileSettingsVM.SXCustomCurve);
+            else if (tag == "SZ") LaunchCurveEditor(ProfileSettingsVM.SZCustomCurve);
         }
 
         private void LaunchCurveEditor(string customDefinition)
         {
-            profileSettingsVM.LaunchCurveEditor(customDefinition);
+            ProfileSettingsVM.LaunchCurveEditor(customDefinition);
         }
 
         private void LaunchProgBrowseBtn_Click(object sender, RoutedEventArgs e)
@@ -900,58 +881,42 @@ namespace DS4WinWPF.DS4Forms
             dialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
             if (dialog.ShowDialog() == true)
             {
-                profileSettingsVM.UpdateLaunchProgram(dialog.FileName);
+                ProfileSettingsVM.UpdateLaunchProgram(dialog.FileName);
             }
         }
 
         private void FrictionUD_ValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
-            if (deviceNum < 4)
+            if (deviceNum < App.RootHub.Controllers.Length && deviceNum >= 0)
             {
-                App.rootHub.touchPad[deviceNum]?.ResetTrackAccel(frictionUD.Value.GetValueOrDefault());
+                App.RootHub.Controllers[deviceNum].TouchPad?.ResetTrackAccel(frictionUD.Value.GetValueOrDefault());
             }
         }
 
         private void RainbowBtn_Click(object sender, RoutedEventArgs e)
         {
-            bool active = profileSettingsVM.Rainbow != 0.0;
+            bool active = ProfileSettingsVM.Rainbow != 0.0;
             if (active)
             {
-                profileSettingsVM.Rainbow = 0.0;
+                ProfileSettingsVM.Rainbow = 0.0;
                 colorByBatteryPerCk.Content = Properties.Resources.ColorByBattery;
                 colorGB.IsEnabled = true;
                 emptyColorGB.IsEnabled = true;
             }
             else
             {
-                profileSettingsVM.Rainbow = 5.0;
+                ProfileSettingsVM.Rainbow = 5.0;
                 colorByBatteryPerCk.Content = Properties.Resources.DimByBattery;
                 colorGB.IsEnabled = false;
                 emptyColorGB.IsEnabled = false;
             }
         }
 
-        private void ChargingColorBtn_Click(object sender, RoutedEventArgs e)
-        {
-            ColorPickerWindow dialog = new ColorPickerWindow();
-            dialog.Owner = Application.Current.MainWindow;
-            Color tempcolor = profileSettingsVM.ChargingColorMedia;
-            dialog.colorPicker.SelectedColor = tempcolor;
-            profileSettingsVM.StartForcedColor(tempcolor);
-            dialog.ColorChanged += (sender2, color) =>
-            {
-                profileSettingsVM.UpdateForcedColor(color);
-            };
-            dialog.ShowDialog();
-            profileSettingsVM.EndForcedColor();
-            profileSettingsVM.UpdateChargingColor(dialog.colorPicker.SelectedColor.GetValueOrDefault());
-        }
-
         private void SteeringWheelEmulationCalibrateBtn_Click(object sender, RoutedEventArgs e)
         {
-            if (profileSettingsVM.SASteeringWheelEmulationAxisIndex > 0)
+            if (ProfileSettingsVM.SASteeringWheelEmulationAxisIndex > 0)
             {
-                DS4Windows.DS4Device d = App.rootHub.DS4Controllers[profileSettingsVM.FuncDevNum];
+                DS4Device d = App.RootHub.Controllers[ProfileSettingsVM.FuncDevNum].Device;
                 if (d != null)
                 {
                     System.Drawing.Point origWheelCenterPoint = new System.Drawing.Point(d.wheelCenterPoint.X, d.wheelCenterPoint.Y);
@@ -997,7 +962,7 @@ namespace DS4WinWPF.DS4Forms
 
         private void TouchDisInvertMenuItem_Click(object sender, RoutedEventArgs e)
         {
-            profileSettingsVM.UpdateTouchDisInvert(touchDisInvertBtn.ContextMenu);
+            ProfileSettingsVM.UpdateTouchDisInvert(touchDisInvertBtn.ContextMenu);
         }
 
         private void GyroMouseTrigMenuItem_Click(object sender, RoutedEventArgs e)
@@ -1006,7 +971,7 @@ namespace DS4WinWPF.DS4Forms
             int itemCount = menu.Items.Count;
             MenuItem alwaysOnItem = menu.Items[itemCount - 1] as MenuItem;
 
-            profileSettingsVM.UpdateGyroMouseTrig(menu, e.OriginalSource == alwaysOnItem);
+            ProfileSettingsVM.UpdateGyroMouseTrig(menu, e.OriginalSource == alwaysOnItem);
         }
 
         private void GyroMouseStickTrigMenuItem_Click(object sender, RoutedEventArgs e)
@@ -1015,7 +980,7 @@ namespace DS4WinWPF.DS4Forms
             int itemCount = menu.Items.Count;
             MenuItem alwaysOnItem = menu.Items[itemCount - 1] as MenuItem;
 
-            profileSettingsVM.UpdateGyroMouseStickTrig(menu, e.OriginalSource == alwaysOnItem);
+            ProfileSettingsVM.UpdateGyroMouseStickTrig(menu, e.OriginalSource == alwaysOnItem);
         }
 
         private void GyroMouseTrigBtn_Click(object sender, RoutedEventArgs e)
@@ -1033,7 +998,7 @@ namespace DS4WinWPF.DS4Forms
             int index = outConTypeCombo.SelectedIndex;
             if (index >= 0)
             {
-                mappingListVM.UpdateMappingDevType(profileSettingsVM.TempConType);
+                mappingListVM.UpdateMappingDevType(ProfileSettingsVM.TempConType);
             }
         }
 
@@ -1080,7 +1045,7 @@ namespace DS4WinWPF.DS4Forms
                 };
                 actEditor.Saved += (sender2, actionName) =>
                 {
-                    DS4Windows.SpecialAction action = DS4Windows.Global.GetAction(actionName);
+                    DS4Windows.SpecialAction action = Global.GetAction(actionName);
                     SpecialActionItem newitem = specialActionsVM.CreateActionItem(action);
                     newitem.Active = item.Active;
                     specialActionsVM.ActionCol.RemoveAt(currentIndex);
@@ -1115,22 +1080,6 @@ namespace DS4WinWPF.DS4Forms
             highlightControlDisplayLb.Content = "";
         }
 
-        private void Ds4LightbarColorBtn_Click(object sender, RoutedEventArgs e)
-        {
-            ColorPickerWindow dialog = new ColorPickerWindow();
-            dialog.Owner = Application.Current.MainWindow;
-            Color tempcolor = profileSettingsVM.MainColor;
-            dialog.colorPicker.SelectedColor = tempcolor;
-            profileSettingsVM.StartForcedColor(tempcolor);
-            dialog.ColorChanged += (sender2, color) =>
-            {
-                profileSettingsVM.UpdateForcedColor(color);
-            };
-            dialog.ShowDialog();
-            profileSettingsVM.EndForcedColor();
-            profileSettingsVM.UpdateMainColor(dialog.colorPicker.SelectedColor.GetValueOrDefault());
-        }
-
         private void InputDS4(object sender, System.Timers.ElapsedEventArgs e)
         {
             inputTimer.Stop();
@@ -1140,13 +1089,13 @@ namespace DS4WinWPF.DS4Forms
             Dispatcher.Invoke(() =>
             {
                 activeWin = Application.Current.MainWindow.IsActive;
-                tempDeviceNum = profileSettingsVM.FuncDevNum;
+                tempDeviceNum = ProfileSettingsVM.FuncDevNum;
             });
 
-            if (activeWin && profileSettingsVM.UseControllerReadout)
+            if (activeWin && ProfileSettingsVM.UseControllerReadout)
             {
                 int index = -1;
-                switch(Program.rootHub.GetActiveInputControl(tempDeviceNum))
+                switch(Program.RootHub.GetActiveInputControl(tempDeviceNum))
                 {
                     case DS4Controls.None: break;
                     case DS4Controls.Cross: index = 0; break;
@@ -1191,21 +1140,21 @@ namespace DS4WinWPF.DS4Forms
                 }
             }
 
-            if (profileSettingsVM.UseControllerReadout)
+            if (ProfileSettingsVM.UseControllerReadout)
             {
                 inputTimer.Start();
             }
         }
         private void ProfileEditor_Closed(object sender, EventArgs e)
         {
-            profileSettingsVM.UseControllerReadout = false;
+            ProfileSettingsVM.UseControllerReadout = false;
             inputTimer.Stop();
             conReadingsUserCon.EnableControl(false);
         }
 
         private void UseControllerReadoutCk_Click(object sender, RoutedEventArgs e)
         {
-            if (profileSettingsVM.UseControllerReadout && profileSettingsVM.Device < 4)
+            if (ProfileSettingsVM.UseControllerReadout && ProfileSettingsVM.Device < 4)
             {
                 inputTimer.Start();
             }
@@ -1219,7 +1168,7 @@ namespace DS4WinWPF.DS4Forms
         {
             MappedControl mpControl = mappingListVM.Mappings[mappingListVM.SelectedIndex];
             BindingWindow window = new BindingWindow(deviceNum, mpControl.Setting);
-            window.Owner = App.Current.MainWindow;
+            window.Owner = Application.Current.MainWindow;
             window.ShowDialog();
             mpControl.UpdateMappingName();
             UpdateHighlightLabel(mpControl);
@@ -1253,7 +1202,7 @@ namespace DS4WinWPF.DS4Forms
             DS4Controls control = (DS4Controls)Convert.ToInt32(btn.Tag);
             MappedControl mpControl = mappingListVM.ControlMap[control];
             BindingWindow window = new BindingWindow(deviceNum, mpControl.Setting);
-            window.Owner = App.Current.MainWindow;
+            window.Owner = Application.Current.MainWindow;
             window.ShowDialog();
             mpControl.UpdateMappingName();
             UpdateHighlightLabel(mpControl);
@@ -1265,7 +1214,7 @@ namespace DS4WinWPF.DS4Forms
             DS4Controls control = (DS4Controls)Convert.ToInt32(btn.Tag);
             MappedControl mpControl = mappingListVM.ControlMap[control];
             BindingWindow window = new BindingWindow(deviceNum, mpControl.Setting);
-            window.Owner = App.Current.MainWindow;
+            window.Owner = Application.Current.MainWindow;
             window.ShowDialog();
             mpControl.UpdateMappingName();
             UpdateHighlightLabel(mpControl);

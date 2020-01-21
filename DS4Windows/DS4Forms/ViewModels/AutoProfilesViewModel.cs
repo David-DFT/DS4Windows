@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Drawing;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security;
 using System.Text;
@@ -474,9 +473,9 @@ namespace DS4WinWPF.DS4Forms.ViewModels
         public ProgramItem(string path, AutoProfileEntity autoProfileEntity = null)
         {
             this.path = path;
-            this.path_lowercase = path.ToLower();
+            path_lowercase = path.ToLower();
             filename = System.IO.Path.GetFileNameWithoutExtension(path);
-            this.matchedAutoProfile = autoProfileEntity;
+            matchedAutoProfile = autoProfileEntity;
             if (autoProfileEntity != null)
             {
                 title = autoProfileEntity.Title;

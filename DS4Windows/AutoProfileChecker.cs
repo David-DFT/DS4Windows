@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security;
 using System.Text;
 using System.Diagnostics; // StopWatch
 using System.Threading; // Sleep
-using System.Threading.Tasks;
 using DS4Windows;
 
 namespace DS4WinWPF
@@ -52,7 +49,7 @@ namespace DS4WinWPF
                     if (tempEntity.IsMatch(topProcessName, topWindowTitle))
                     {
                         if (autoProfileDebugLogLevel > 0)
-                            DS4Windows.AppLogger.LogToGui($"DEBUG: Auto-Profile. Rule#{i + 1}  Path={tempEntity.path}  Title={tempEntity.title}", false);
+                            AppLogger.LogToGui($"DEBUG: Auto-Profile. Rule#{i + 1}  Path={tempEntity.path}  Title={tempEntity.title}", false);
 
                         // Matching autoprofile rule found
                         turnOffDS4WinApp = tempEntity.Turnoff;
@@ -80,20 +77,20 @@ namespace DS4WinWPF
                         string tempname = matchedProfileEntity.ProfileNames[j];
                         if (tempname != string.Empty && tempname != "(none)")
                         {
-                            if ((Global.useTempProfile[j] && tempname != Global.tempprofilename[j]) ||
-                                (!Global.useTempProfile[j] && tempname != Global.ProfilePath[j]) ||
+                            if ((Global.UseTempProfile[j] && tempname != Global.tempprofilename[j]) ||
+                                (!Global.UseTempProfile[j] && tempname != Global.ProfilePath[j]) ||
                                 forceLoadProfile)
                             {
                                 if (autoProfileDebugLogLevel > 0)
-                                    DS4Windows.AppLogger.LogToGui($"DEBUG: Auto-Profile. LoadProfile Controller {j + 1}={tempname}", false);
+                                    AppLogger.LogToGui($"DEBUG: Auto-Profile. LoadProfile Controller {j + 1}={tempname}", false);
 
-                                Global.LoadTempProfile(j, tempname, true, Program.rootHub); // j is controller index, i is filename
+                                Global.LoadTempProfile(j, tempname, true, Program.RootHub); // j is controller index, i is filename
                                                                                               //if (LaunchProgram[j] != string.Empty) Process.Start(LaunchProgram[j]);
                             }
                             else
                             {
                                 if (autoProfileDebugLogLevel > 0)
-                                    DS4Windows.AppLogger.LogToGui($"DEBUG: Auto-Profile. LoadProfile Controller {j + 1}={tempname} (already loaded)", false);
+                                    AppLogger.LogToGui($"DEBUG: Auto-Profile. LoadProfile Controller {j + 1}={tempname} (already loaded)", false);
                             }
                         }
                     }
@@ -101,10 +98,10 @@ namespace DS4WinWPF
                     if (turnOffDS4WinApp)
                     {
                         turnOffTemp = true;
-                        if (App.rootHub.running)
+                        if (App.RootHub.Running)
                         {
                             if (autoProfileDebugLogLevel > 0)
-                                DS4Windows.AppLogger.LogToGui($"DEBUG: Auto-Profile. Turning DS4Windows temporarily off", false);
+                                AppLogger.LogToGui($"DEBUG: Auto-Profile. Turning DS4Windows temporarily off", false);
 
                             SetAndWaitServiceStatus(false);
                         }
@@ -114,13 +111,13 @@ namespace DS4WinWPF
                 }
                 else if (tempAutoProfile != null)
                 {
-                    if (turnOffTemp && DS4Windows.Global.AutoProfileRevertDefaultProfile)
+                    if (turnOffTemp && Global.AutoProfileRevertDefaultProfile)
                     {
                         turnOffTemp = false;
-                        if (!App.rootHub.running)
+                        if (!App.RootHub.Running)
                         {
                             if (autoProfileDebugLogLevel > 0)
-                                DS4Windows.AppLogger.LogToGui($"DEBUG: Auto-Profile. Turning DS4Windows on before reverting to default profile", false);
+                                AppLogger.LogToGui($"DEBUG: Auto-Profile. Turning DS4Windows on before reverting to default profile", false);
 
                             SetAndWaitServiceStatus(true);
                         }
@@ -129,19 +126,19 @@ namespace DS4WinWPF
                     tempAutoProfile = null;
                     for (int j = 0; j < 4; j++)
                     {
-                        if (Global.useTempProfile[j])
+                        if (Global.UseTempProfile[j])
                         {
-                            if (DS4Windows.Global.AutoProfileRevertDefaultProfile)
+                            if (Global.AutoProfileRevertDefaultProfile)
                             {
                                 if (autoProfileDebugLogLevel > 0)
-                                    DS4Windows.AppLogger.LogToGui($"DEBUG: Auto-Profile. Unknown process. Reverting to default profile. Controller {j + 1}={Global.ProfilePath[j]} (default)", false);
+                                    AppLogger.LogToGui($"DEBUG: Auto-Profile. Unknown process. Reverting to default profile. Controller {j + 1}={Global.ProfilePath[j]} (default)", false);
 
-                                Global.LoadProfile(j, false, Program.rootHub);
+                                Global.LoadProfile(j, false, Program.RootHub);
                             }
                             else
                             {
                                 if (autoProfileDebugLogLevel > 0)
-                                    DS4Windows.AppLogger.LogToGui($"DEBUG: Auto-Profile. Unknown process. Existing profile left as active. Controller {j + 1}={Global.tempprofilename[j]}", false);
+                                    AppLogger.LogToGui($"DEBUG: Auto-Profile. Unknown process. Existing profile left as active. Controller {j + 1}={Global.tempprofilename[j]}", false);
                             }
                         }
                     }
@@ -157,7 +154,7 @@ namespace DS4WinWPF
                 // Top window unknown or cannot acquire a handle. Return FALSE and return unknown process and wndTitle values
                 prevForegroundWnd = IntPtr.Zero;
                 prevForegroundProcessID = 0;
-                topProcessName = topWndTitleName = String.Empty;
+                topProcessName = topWndTitleName = string.Empty;
                 return false;
             }
 
@@ -206,7 +203,7 @@ namespace DS4WinWPF
             if (hProcess != IntPtr.Zero) CloseHandle(hProcess);
 
             if (autoProfileDebugLogLevel > 0)
-                DS4Windows.AppLogger.LogToGui($"DEBUG: Auto-Profile. PID={lpdwProcessId}  Path={topProcessName} | WND={hWnd}  Title={topWndTitleName}", false);
+                AppLogger.LogToGui($"DEBUG: Auto-Profile. PID={lpdwProcessId}  Path={topProcessName} | WND={hWnd}  Title={topWndTitleName}", false);
 
             return true;
         }
@@ -214,7 +211,7 @@ namespace DS4WinWPF
         private void SetAndWaitServiceStatus(bool serviceRunningStatus)
         {
             // Start or Stop the service only if it is not already in the requested state
-            if (App.rootHub.running != serviceRunningStatus)
+            if (App.RootHub.Running != serviceRunningStatus)
             {
                 RequestServiceChange?.Invoke(this, serviceRunningStatus);
 
@@ -222,7 +219,7 @@ namespace DS4WinWPF
                 // LoadProfile call fails if a new profile is loaded while DS4Win service is still in stopped state (ie the loaded temp profile doesn't do anything).
                 Stopwatch sw = new Stopwatch();
                 sw.Start();
-                while (App.rootHub.running != serviceRunningStatus && sw.Elapsed.TotalSeconds < 10)
+                while (App.RootHub.Running != serviceRunningStatus && sw.Elapsed.TotalSeconds < 10)
                 {
                     Thread.SpinWait(1000);
                 }

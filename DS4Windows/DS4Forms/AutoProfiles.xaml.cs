@@ -1,18 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using Ookii.Dialogs.Wpf;
 using DS4WinWPF.DS4Forms.ViewModels;
 using Microsoft.Win32;
@@ -24,7 +14,7 @@ namespace DS4WinWPF.DS4Forms
     /// </summary>
     public partial class AutoProfiles : UserControl
     {
-        protected String m_Profile = DS4Windows.Global.appdatapath + "\\Auto Profiles.xml";
+        protected string m_Profile = DS4Windows.Global.appdatapath + "\\Auto Profiles.xml";
         public const string steamCommx86Loc = @"C:\Program Files (x86)\Steam\steamapps\common";
         public const string steamCommLoc = @"C:\Program Files\Steam\steamapps\common";
         private string steamgamesdir;
@@ -165,7 +155,7 @@ namespace DS4WinWPF.DS4Forms
 
         private void SteamMenuItem_Click(object sender, RoutedEventArgs e)
         {
-            this.IsEnabled = false;
+            IsEnabled = false;
             steamMenuItem.Visibility = Visibility.Collapsed;
             programListLV.ItemsSource = null;
             autoProfVM.SearchFinished += AppsSearchFinished;
@@ -174,7 +164,7 @@ namespace DS4WinWPF.DS4Forms
 
         private void BrowseProgsMenuItem_Click(object sender, RoutedEventArgs e)
         {
-            this.IsEnabled = false;
+            IsEnabled = false;
             VistaFolderBrowserDialog dialog = new VistaFolderBrowserDialog();
             if (dialog.ShowDialog() == true)
             {
@@ -185,13 +175,13 @@ namespace DS4WinWPF.DS4Forms
             }
             else
             {
-                this.IsEnabled = true;
+                IsEnabled = true;
             }
         }
 
         private void StartMenuItem_Click(object sender, RoutedEventArgs e)
         {
-            this.IsEnabled = false;
+            IsEnabled = false;
             startMenuItem.Visibility = Visibility.Collapsed;
             programListLV.ItemsSource = null;
             autoProfVM.SearchFinished += AppsSearchFinished;
@@ -257,7 +247,7 @@ namespace DS4WinWPF.DS4Forms
 
         private void BrowseAddProgMenuItem_Click(object sender, RoutedEventArgs e)
         {
-            this.IsEnabled = false;
+            IsEnabled = false;
             OpenFileDialog dialog = new OpenFileDialog();
             dialog.Multiselect = false;
             dialog.AddExtension = true;
@@ -274,7 +264,7 @@ namespace DS4WinWPF.DS4Forms
             }
             else
             {
-                this.IsEnabled = true;
+                IsEnabled = true;
             }
         }
 

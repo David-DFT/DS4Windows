@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Drawing;
 using System.Windows.Media;
 using System.Windows.Interop;
@@ -141,10 +137,7 @@ namespace DS4WinWPF.DS4Forms.ViewModels
         private int checkEveryUnitIdx = 1;
         public int CheckEveryUnit
         {
-            get
-            {
-                return checkEveryUnitIdx;
-            }
+            get => checkEveryUnitIdx;
             set
             {
                 if (checkEveryUnitIdx == value) return;

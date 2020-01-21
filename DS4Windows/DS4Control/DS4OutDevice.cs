@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Nefarius.ViGEm.Client;
+﻿using Nefarius.ViGEm.Client;
 using Nefarius.ViGEm.Client.Targets;
 using Nefarius.ViGEm.Client.Targets.DualShock4;
 
@@ -11,18 +6,19 @@ namespace DS4Windows
 {
     class DS4OutDevice : OutputDevice
     {
-        public const string devtype = "DS4";
+        private const string devtype = "DS4";
 
-        public DualShock4Controller cont;
-        private DualShock4Report report;
+        public DualShock4Controller Controller { get; }
+
+        private readonly DualShock4Report report;
 
         public DS4OutDevice(ViGEmClient client)
         {
-            cont = new DualShock4Controller(client);
+            Controller = new DualShock4Controller(client);
             report = new DualShock4Report();
         }
 
-        public override void ConvertandSendReport(DS4State state, int device)
+        public override void ConvertAndSendReport(DS4State state, int device)
         {
             DualShock4Buttons tempButtons = 0;
             DualShock4DPadValues tempDPad = DualShock4DPadValues.None;
@@ -113,23 +109,23 @@ namespace DS4Windows
 
                 case SASteeringWheelEmulationAxisType.L2R2:
                     report.LeftTrigger = report.RightTrigger = 0;
-                    if (state.SASteeringWheelEmulationUnit >= 0) report.LeftTrigger = (Byte)state.SASteeringWheelEmulationUnit;
-                    else report.RightTrigger = (Byte)state.SASteeringWheelEmulationUnit;
+                    if (state.SASteeringWheelEmulationUnit >= 0) report.LeftTrigger = (byte)state.SASteeringWheelEmulationUnit;
+                    else report.RightTrigger = (byte)state.SASteeringWheelEmulationUnit;
                     goto case SASteeringWheelEmulationAxisType.None;
 
                 case SASteeringWheelEmulationAxisType.VJoy1X:
                 case SASteeringWheelEmulationAxisType.VJoy2X:
-                    DS4Windows.VJoyFeeder.vJoyFeeder.FeedAxisValue(state.SASteeringWheelEmulationUnit, ((((uint)steeringWheelMappedAxis) - ((uint)SASteeringWheelEmulationAxisType.VJoy1X)) / 3) + 1, DS4Windows.VJoyFeeder.HID_USAGES.HID_USAGE_X);
+                    VJoyFeeder.vJoyFeeder.FeedAxisValue(state.SASteeringWheelEmulationUnit, ((((uint)steeringWheelMappedAxis) - ((uint)SASteeringWheelEmulationAxisType.VJoy1X)) / 3) + 1, VJoyFeeder.HID_USAGES.HID_USAGE_X);
                     goto case SASteeringWheelEmulationAxisType.None;
 
                 case SASteeringWheelEmulationAxisType.VJoy1Y:
                 case SASteeringWheelEmulationAxisType.VJoy2Y:
-                    DS4Windows.VJoyFeeder.vJoyFeeder.FeedAxisValue(state.SASteeringWheelEmulationUnit, ((((uint)steeringWheelMappedAxis) - ((uint)SASteeringWheelEmulationAxisType.VJoy1X)) / 3) + 1, DS4Windows.VJoyFeeder.HID_USAGES.HID_USAGE_Y);
+                    VJoyFeeder.vJoyFeeder.FeedAxisValue(state.SASteeringWheelEmulationUnit, ((((uint)steeringWheelMappedAxis) - ((uint)SASteeringWheelEmulationAxisType.VJoy1X)) / 3) + 1, VJoyFeeder.HID_USAGES.HID_USAGE_Y);
                     goto case SASteeringWheelEmulationAxisType.None;
 
                 case SASteeringWheelEmulationAxisType.VJoy1Z:
                 case SASteeringWheelEmulationAxisType.VJoy2Z:
-                    DS4Windows.VJoyFeeder.vJoyFeeder.FeedAxisValue(state.SASteeringWheelEmulationUnit, ((((uint)steeringWheelMappedAxis) - ((uint)SASteeringWheelEmulationAxisType.VJoy1X)) / 3) + 1, DS4Windows.VJoyFeeder.HID_USAGES.HID_USAGE_Z);
+                    VJoyFeeder.vJoyFeeder.FeedAxisValue(state.SASteeringWheelEmulationUnit, ((((uint)steeringWheelMappedAxis) - ((uint)SASteeringWheelEmulationAxisType.VJoy1X)) / 3) + 1, VJoyFeeder.HID_USAGES.HID_USAGE_Z);
                     goto case SASteeringWheelEmulationAxisType.None;
 
                 default:
@@ -137,11 +133,11 @@ namespace DS4Windows
                     goto case SASteeringWheelEmulationAxisType.None;
             }
 
-            cont.SendReport(report);
+            Controller.SendReport(report);
         }
 
-        public override void Connect() => cont.Connect();
-        public override void Disconnect() => cont.Disconnect();
+        public override void Connect() => Controller.Connect();
+        public override void Disconnect() => Controller.Disconnect();
         public override string GetDeviceType() => devtype;
     }
 }

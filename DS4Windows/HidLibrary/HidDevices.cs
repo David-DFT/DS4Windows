@@ -60,8 +60,8 @@ namespace DS4Windows
                 {
                     VidPidInfo tempInfo = devInfo[j];
                     if (tempDev.Capabilities.Usage == 0x05 &&
-                        tempDev.Attributes.VendorId == tempInfo.vid &&
-                        tempDev.Attributes.ProductId == tempInfo.pid)
+                        tempDev.Attributes.VendorId == tempInfo.Vid &&
+                        tempDev.Attributes.ProductId == tempInfo.Pid)
                     {
                         found = true;
                         foundDevs.Add(tempDev);

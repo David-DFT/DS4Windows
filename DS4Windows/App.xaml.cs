@@ -1,12 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.IO.MemoryMappedFiles;
-using System.Linq;
 using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -43,7 +39,7 @@ namespace DS4WinWPF
         }
 
         private Thread controlThread;
-        public static DS4Windows.ControlService rootHub;
+        public static DS4Windows.ControlService RootHub;
         public static HttpClient requestClient;
         private bool skipSave;
         private bool runShutdown;
@@ -124,7 +120,7 @@ namespace DS4WinWPF
                 Current.Shutdown(1);
             }
 
-            logHolder = new LoggerHolder(rootHub);
+            logHolder = new LoggerHolder(RootHub);
             DispatcherUnhandledException += App_DispatcherUnhandledException;
             Logger logger = logHolder.Logger;
             string version = DS4Windows.Global.exeversion;
@@ -254,7 +250,7 @@ namespace DS4WinWPF
             }
             else if (parser.ReenableDevice)
             {
-                DS4Windows.DS4Devices.reEnableDevice(parser.DeviceInstanceId);
+                DS4Windows.DS4Devices.ReEnableDevice(parser.DeviceInstanceId);
                 runShutdown = false;
                 exitApp = true;
                 Current.Shutdown();
@@ -298,8 +294,8 @@ namespace DS4WinWPF
         private void CreateControlService()
         {
             controlThread = new Thread(() => {
-                rootHub = new DS4Windows.ControlService();
-                DS4Windows.Program.rootHub = rootHub;
+                RootHub = new DS4Windows.ControlService();
+                DS4Windows.Program.RootHub = RootHub;
                 requestClient = new HttpClient();
                 collectTimer = new Timer(GarbageTask, null, 30000, 30000);
 
@@ -314,7 +310,7 @@ namespace DS4WinWPF
         private void CreateBaseThread()
         {
             controlThread = new Thread(() => {
-                DS4Windows.Program.rootHub = rootHub;
+                DS4Windows.Program.RootHub = RootHub;
                 requestClient = new HttpClient();
                 collectTimer = new Timer(GarbageTask, null, 30000, 30000);
             });
@@ -370,7 +366,7 @@ namespace DS4WinWPF
                 StringBuilder wndClassNameStr = new StringBuilder(128);
                 if (GetClassName(hWnd, wndClassNameStr, wndClassNameStr.Capacity) != 0 && wndClassNameStr.Length > 0)
                 {
-                    byte[] buffer = ASCIIEncoding.ASCII.GetBytes(wndClassNameStr.ToString());
+                    byte[] buffer = Encoding.ASCII.GetBytes(wndClassNameStr.ToString());
 
                     ipcClassNameMMF = MemoryMappedFile.CreateNew("DS4Windows_IPCClassName.dat", 128);
                     ipcClassNameMMA = ipcClassNameMMF.CreateViewAccessor(0, buffer.Length);
@@ -395,7 +391,7 @@ namespace DS4WinWPF
                 mmf = MemoryMappedFile.OpenExisting("DS4Windows_IPCClassName.dat");
                 mma = mmf.CreateViewAccessor(0, 128);
                 mma.ReadArray(0, buffer, 0, buffer.Length);
-                return ASCIIEncoding.ASCII.GetString(buffer);
+                return Encoding.ASCII.GetString(buffer);
             }
             catch (Exception)
             {
@@ -446,11 +442,11 @@ namespace DS4WinWPF
         {
             if (runShutdown)
             {
-                if (rootHub != null)
+                if (RootHub != null)
                 {
                     Task.Run(() =>
                     {
-                        rootHub.Stop();
+                        RootHub.Stop();
                     }).Wait();
                 }
 

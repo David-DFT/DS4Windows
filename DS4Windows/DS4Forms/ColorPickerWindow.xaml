@@ -8,6 +8,6 @@
         mc:Ignorable="d"
         Title="ColorPickerWindow" Height="400" Width="300">
     <DockPanel>
-        <xctk:ColorCanvas x:Name="colorPicker" SelectedColorChanged="ColorPicker_SelectedColorChanged" />
+        <xctk:ColorCanvas x:Name="ColorPicker" SelectedColorChanged="ColorPicker_SelectedColorChanged" />
     </DockPanel>
 </Window>

@@ -102,8 +102,7 @@ namespace DS4Windows
             bool touchPadIsDown = sensors.TouchButton;
             if (!PacketChanged(data, touchPacketOffset) && touchPadIsDown == lastTouchPadIsDown)
             {
-                if (TouchUnchanged != null)
-                    TouchUnchanged(this, EventArgs.Empty);
+                TouchUnchanged?.Invoke(this, EventArgs.Empty);
                 return;
             }
 
@@ -235,13 +234,11 @@ namespace DS4Windows
             {
                 if (touchPadIsDown && !lastTouchPadIsDown)
                 {
-                    if (TouchButtonDown != null)
-                        TouchButtonDown(this, new TouchpadEventArgs(sensors.ReportTimeStamp, sensors.TouchButton, null, null));
+                    TouchButtonDown?.Invoke(this, new TouchpadEventArgs(sensors.ReportTimeStamp, sensors.TouchButton, null, null));
                 }
                 else if (!touchPadIsDown && lastTouchPadIsDown)
                 {
-                    if (TouchButtonUp != null)
-                        TouchButtonUp(this, new TouchpadEventArgs(sensors.ReportTimeStamp, sensors.TouchButton, null, null));
+                    TouchButtonUp?.Invoke(this, new TouchpadEventArgs(sensors.ReportTimeStamp, sensors.TouchButton, null, null));
                 }
 
                 if ((lastIsActive1 || lastIsActive2) && TouchesEnded != null)

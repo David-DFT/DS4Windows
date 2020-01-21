@@ -3,9 +3,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -110,7 +107,7 @@ namespace DS4WinWPF.DS4Forms.ViewModels
             BindingOperations.EnableCollectionSynchronization(macroSteps, _colLockobj);
             
             // By default RECORD button appends new steps. User must select (click) an existing step to insert new steps in front of the selected step
-            this.MacroStepIndex = -1;
+            MacroStepIndex = -1;
         }
 
         public void LoadMacro()
@@ -269,10 +266,10 @@ namespace DS4WinWPF.DS4Forms.ViewModels
         {
             if (deviceNum < 4)
             {
-                DS4Color dcolor = new DS4Color() { red = color.R, green = color.G, blue = color.B };
-                DS4LightBar.forcedColor[deviceNum] = dcolor;
-                DS4LightBar.forcedFlash[deviceNum] = 0;
-                DS4LightBar.forcelight[deviceNum] = true;
+                DS4Color dcolor = new DS4Color() { Red = color.R, Green = color.G, Blue = color.B };
+                DS4LightBar.ForcedColor[deviceNum] = dcolor;
+                DS4LightBar.ForcedFlash[deviceNum] = 0;
+                DS4LightBar.Forcelight[deviceNum] = true;
             }
         }
 
@@ -280,9 +277,9 @@ namespace DS4WinWPF.DS4Forms.ViewModels
         {
             if (deviceNum < 4)
             {
-                DS4LightBar.forcedColor[deviceNum] = new DS4Color(0, 0, 0);
-                DS4LightBar.forcedFlash[deviceNum] = 0;
-                DS4LightBar.forcelight[deviceNum] = false;
+                DS4LightBar.ForcedColor[deviceNum] = new DS4Color(0, 0, 0);
+                DS4LightBar.ForcedFlash[deviceNum] = 0;
+                DS4LightBar.Forcelight[deviceNum] = false;
             }
         }
 
@@ -290,43 +287,43 @@ namespace DS4WinWPF.DS4Forms.ViewModels
         {
             if (deviceNum < 4)
             {
-                DS4Color dcolor = new DS4Color() { red = color.R, green = color.G, blue = color.B };
-                DS4LightBar.forcedColor[deviceNum] = dcolor;
-                DS4LightBar.forcedFlash[deviceNum] = 0;
-                DS4LightBar.forcelight[deviceNum] = true;
+                DS4Color dcolor = new DS4Color() { Red = color.R, Green = color.G, Blue = color.B };
+                DS4LightBar.ForcedColor[deviceNum] = dcolor;
+                DS4LightBar.ForcedFlash[deviceNum] = 0;
+                DS4LightBar.Forcelight[deviceNum] = true;
             }
         }
 
         public void ProcessDS4Tick()
         {
-            if (Program.rootHub.DS4Controllers[0] != null)
+            DS4Device dev = Program.RootHub.Controllers[0].Device;
+            if (dev is null)
+                return;
+            
+            DS4State cState = dev.GetCurrentStateRef();
+            for (DS4Controls dc = DS4Controls.LXNeg; dc < DS4Controls.GyroXPos; dc++)
             {
-                DS4Device dev = Program.rootHub.DS4Controllers[0];
-                DS4State cState = dev.getCurrentStateRef();
-                for (DS4Controls dc = DS4Controls.LXNeg; dc < DS4Controls.GyroXPos; dc++)
+                // Ignore Touch controls
+                if (dc >= DS4Controls.TouchLeft && dc <= DS4Controls.TouchRight)
                 {
-                    // Ignore Touch controls
-                    if (dc >= DS4Controls.TouchLeft && dc <= DS4Controls.TouchRight)
-                    {
-                        continue;
-                    }
+                    continue;
+                }
 
-                    int macroValue = Global.macroDS4Values[dc];
-                    keysdownMap.TryGetValue(macroValue, out bool isdown);
-                    if (!isdown && Mapping.getBoolMapping(0, dc, cState, null, null))
-                    {
-                        MacroStep step = new MacroStep(macroValue, MacroParser.macroInputNames[macroValue],
-                                MacroStep.StepType.ActDown, MacroStep.StepOutput.Button);
-                        AddMacroStep(step);
-                        keysdownMap.Add(macroValue, true);
-                    }
-                    else if (isdown && !Mapping.getBoolMapping(0, dc, cState, null, null))
-                    {
-                        MacroStep step = new MacroStep(macroValue, MacroParser.macroInputNames[macroValue],
-                                MacroStep.StepType.ActUp, MacroStep.StepOutput.Button);
-                        AddMacroStep(step);
-                        keysdownMap.Remove(macroValue);
-                    }
+                int macroValue = Global.MacroDS4Values[dc];
+                keysdownMap.TryGetValue(macroValue, out bool isdown);
+                if (!isdown && Mapping.getBoolMapping(0, dc, cState, null, null))
+                {
+                    MacroStep step = new MacroStep(macroValue, MacroParser.macroInputNames[macroValue],
+                            MacroStep.StepType.ActDown, MacroStep.StepOutput.Button);
+                    AddMacroStep(step);
+                    keysdownMap.Add(macroValue, true);
+                }
+                else if (isdown && !Mapping.getBoolMapping(0, dc, cState, null, null))
+                {
+                    MacroStep step = new MacroStep(macroValue, MacroParser.macroInputNames[macroValue],
+                            MacroStep.StepType.ActUp, MacroStep.StepOutput.Button);
+                    AddMacroStep(step);
+                    keysdownMap.Remove(macroValue);
                 }
             }
         }

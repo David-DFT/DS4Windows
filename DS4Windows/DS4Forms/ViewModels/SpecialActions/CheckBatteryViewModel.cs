@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Media;
 using DS4Windows;
 using DS4WinWPF.DS4Forms.ViewModels.Util;
@@ -45,25 +42,25 @@ namespace DS4WinWPF.DS4Forms.ViewModels.SpecialActions
         }
         public event EventHandler FullColorChanged;
 
-        public void UpdateForcedColor(System.Windows.Media.Color color, int device)
+        public void UpdateForcedColor(Color color, int device)
         {
             if (device < 4)
             {
-                DS4Color dcolor = new DS4Color() { red = color.R, green = color.G, blue = color.B };
-                DS4LightBar.forcedColor[device] = dcolor;
-                DS4LightBar.forcedFlash[device] = 0;
-                DS4LightBar.forcelight[device] = true;
+                DS4Color dcolor = new DS4Color() { Red = color.R, Green = color.G, Blue = color.B };
+                DS4LightBar.ForcedColor[device] = dcolor;
+                DS4LightBar.ForcedFlash[device] = 0;
+                DS4LightBar.Forcelight[device] = true;
             }
         }
 
-        public void StartForcedColor(System.Windows.Media.Color color, int device)
+        public void StartForcedColor(Color color, int device)
         {
             if (device < 4)
             {
-                DS4Color dcolor = new DS4Color() { red = color.R, green = color.G, blue = color.B };
-                DS4LightBar.forcedColor[device] = dcolor;
-                DS4LightBar.forcedFlash[device] = 0;
-                DS4LightBar.forcelight[device] = true;
+                DS4Color dcolor = new DS4Color() { Red = color.R, Green = color.G, Blue = color.B };
+                DS4LightBar.ForcedColor[device] = dcolor;
+                DS4LightBar.ForcedFlash[device] = 0;
+                DS4LightBar.Forcelight[device] = true;
             }
         }
 
@@ -71,9 +68,9 @@ namespace DS4WinWPF.DS4Forms.ViewModels.SpecialActions
         {
             if (device < 4)
             {
-                DS4LightBar.forcedColor[device] = new DS4Color(0, 0, 0);
-                DS4LightBar.forcedFlash[device] = 0;
-                DS4LightBar.forcelight[device] = false;
+                DS4LightBar.ForcedColor[device] = new DS4Color(0, 0, 0);
+                DS4LightBar.ForcedFlash[device] = 0;
+                DS4LightBar.Forcelight[device] = false;
             }
         }
 

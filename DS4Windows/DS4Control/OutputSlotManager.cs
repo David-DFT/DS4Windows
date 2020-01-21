@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Nefarius.ViGEm.Client;
 
@@ -16,22 +14,21 @@ namespace DS4Windows
         private OutputDevice[] outputDevices = new OutputDevice[4];
         private Queue<Action> actions = new Queue<Action>();
         private object actionLock = new object();
-        private bool runningQueue;
 
-        public bool RunningQueue { get => runningQueue; }
+        public bool RunningQueue { get; private set; }
 
-        public OutputDevice AllocateController(OutContType contType, ViGEmClient client)
+        public OutputDevice AllocateController(OutControllerType contType, ViGEmClient client)
         {
             OutputDevice outputDevice = null;
             switch(contType)
             {
-                case OutContType.X360:
+                case OutControllerType.X360:
                     outputDevice = new Xbox360OutDevice(client);
                     break;
-                case OutContType.DS4:
+                case OutControllerType.DS4:
                     outputDevice = new DS4OutDevice(client);
                     break;
-                case OutContType.None:
+                case OutControllerType.None:
                 default:
                     break;
             }
@@ -81,19 +78,22 @@ namespace DS4Windows
 
         private void PrepareEventTask()
         {
-            if (!runningQueue)
+            if (!RunningQueue)
             {
-                runningQueue = true;
+                RunningQueue = true;
                 Task.Run(() =>
                 {
                     LaunchEvents();
-                    runningQueue = false;
+                    RunningQueue = false;
                 });
             }
         }
 
-        public void DeferredPlugin(OutputDevice outputDevice, int inIdx, OutputDevice[] outdevs)
+        public void DeferredPlugin(OutputDevice outputDevice, DS4 controller)
         {
+            if (outputDevice is null || controller is null)
+                return;
+
             Action tempAction = new Action(() =>
             {
                 int slot = FindSlot();
@@ -104,7 +104,7 @@ namespace DS4Windows
                     devictDict.Add(slot, outputDevice);
                     revDevictDict.Add(outputDevice, slot);
                     Task.Delay(DELAY_TIME).Wait();
-                    outdevs[inIdx] = outputDevice;
+                    controller.Output = outputDevice;
                 }
             });
 
@@ -116,8 +116,11 @@ namespace DS4Windows
             PrepareEventTask();
         }
 
-        public void DeferredRemoval(OutputDevice outputDevice, int inIdx, OutputDevice[] outdevs, bool immediate = false)
+        public void DeferredRemoval(OutputDevice outputDevice, DS4 controller, bool immediate = false)
         {
+            if (outputDevice is null || controller is null)
+                return;
+            
             Action tempAction = new Action(() =>
             {
                 if (revDevictDict.ContainsKey(outputDevice))
@@ -127,7 +130,7 @@ namespace DS4Windows
                     devictDict.Remove(slot);
                     revDevictDict.Remove(outputDevice);
                     outputDevice.Disconnect();
-                    outdevs[inIdx] = null;
+                    controller.Output = null;
                     if (!immediate)
                     {
                         Task.Delay(DELAY_TIME).Wait();

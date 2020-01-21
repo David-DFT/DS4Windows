@@ -429,7 +429,7 @@ namespace DS4Windows
                     // Remote client connections allowed.
                     IPAddress[] ipAddresses = Dns.GetHostAddresses(listenAddress);
                     udpListenIPAddress = null; 
-                    foreach (IPAddress ip4 in ipAddresses.Where(ip => ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork))
+                    foreach (IPAddress ip4 in ipAddresses.Where(ip => ip.AddressFamily == AddressFamily.InterNetwork))
                     {
                         udpListenIPAddress = ip4;
                         break;

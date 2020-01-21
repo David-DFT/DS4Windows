@@ -1,19 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using Microsoft.Win32;
 using System.Windows.Interop;
 using System.Diagnostics;
@@ -65,7 +58,7 @@ namespace DS4WinWPF.DS4Forms
             App root = Application.Current as App;
             settingsWrapVM = new SettingsViewModel();
             settingsTab.DataContext = settingsWrapVM;
-            logvm = new LogViewModel(App.rootHub);
+            logvm = new LogViewModel(App.RootHub);
             //logListView.ItemsSource = logvm.LogItems;
             logListView.DataContext = logvm;
             lastMsgLb.DataContext = lastLogMsg;
@@ -73,13 +66,13 @@ namespace DS4WinWPF.DS4Forms
             profileListHolder.Refresh();
             profilesListBox.ItemsSource = profileListHolder.ProfileListCol;
 
-            StartStopBtn.Content = App.rootHub.running ? Translations.Strings.StopText :
+            StartStopBtn.Content = App.RootHub.Running ? Translations.Strings.StopText :
                 Translations.Strings.StartText;
 
-            conLvViewModel = new ControllerListViewModel(App.rootHub, profileListHolder);
+            conLvViewModel = new ControllerListViewModel(App.RootHub, profileListHolder);
             controllerLV.DataContext = conLvViewModel;
             ChangeControllerPanel();
-            trayIconVM = new TrayIconViewModel(App.rootHub, profileListHolder);
+            trayIconVM = new TrayIconViewModel(App.RootHub, profileListHolder);
             notifyIcon.DataContext = trayIconVM;
 
             if (Global.StartMinimized || parser.Mini)
@@ -93,8 +86,8 @@ namespace DS4WinWPF.DS4Forms
                 uacImg.Visibility = Visibility.Collapsed;
             }
 
-            this.Width = Global.FormWidth;
-            this.Height = Global.FormHeight;
+            Width = Global.FormWidth;
+            Height = Global.FormHeight;
             WindowStartupLocation = WindowStartupLocation.Manual;
             Left = Global.FormLocationX;
             Top = Global.FormLocationY;
@@ -126,7 +119,7 @@ namespace DS4WinWPF.DS4Forms
                 CheckDrivers();
                 if (!parser.Stop)
                 {
-                    App.rootHub.Start();
+                    App.RootHub.Start();
                     //root.rootHubtest.Start();
                 }
 
@@ -211,7 +204,7 @@ Properties.Resources.DS4Update, MessageBoxButton.YesNo, MessageBoxImage.Question
 
         private void TrayIconVM_RequestMinimize(object sender, EventArgs e)
         {
-            this.WindowState = WindowState.Minimized;
+            WindowState = WindowState.Minimized;
         }
 
         private void TrayIconVM_ProfileSelected(TrayIconViewModel sender,
@@ -243,15 +236,15 @@ Properties.Resources.DS4Update, MessageBoxButton.YesNo, MessageBoxImage.Question
         private void SetupEvents()
         {
             App root = Application.Current as App;
-            App.rootHub.ServiceStarted += ControlServiceStarted;
-            App.rootHub.RunningChanged += ControlServiceChanged;
-            App.rootHub.PreServiceStop += PrepareForServiceStop;
+            App.RootHub.ServiceStarted += ControlServiceStarted;
+            App.RootHub.RunningChanged += ControlServiceChanged;
+            App.RootHub.PreServiceStop += PrepareForServiceStop;
             //root.rootHubtest.RunningChanged += ControlServiceChanged;
             conLvViewModel.ControllerCol.CollectionChanged += ControllerCol_CollectionChanged;
             AppLogger.TrayIconLog += ShowNotification;
             AppLogger.GuiLog += UpdateLastStatusMessage;
             logvm.LogItems.CollectionChanged += LogItems_CollectionChanged;
-            App.rootHub.Debug += UpdateLastStatusMessage;
+            App.RootHub.Debug += UpdateLastStatusMessage;
             trayIconVM.RequestShutdown += TrayIconVM_RequestShutdown;
             trayIconVM.ProfileSelected += TrayIconVM_ProfileSelected;
             trayIconVM.RequestMinimize += TrayIconVM_RequestMinimize;
@@ -370,7 +363,7 @@ Suspend support not enabled.", true);
                 // Wakeup from Suspend
                 case 7:
                     DS4LightBar.shuttingdown = false;
-                    App.rootHub.suspending = false;
+                    App.RootHub.suspending = false;
 
                     if (wasrunning)
                     {
@@ -381,23 +374,23 @@ Suspend support not enabled.", true);
                             StartStopBtn.IsEnabled = false;
                         }));
 
-                        App.rootHub.Start();
+                        App.RootHub.Start();
                     }
 
                     break;
                 // Entering Suspend
                 case 4:
                     DS4LightBar.shuttingdown = true;
-                    Program.rootHub.suspending = true;
+                    Program.RootHub.suspending = true;
 
-                    if (App.rootHub.running)
+                    if (App.RootHub.Running)
                     {
                         Dispatcher.BeginInvoke((Action)(() =>
                         {
                             StartStopBtn.IsEnabled = false;
                         }));
 
-                        App.rootHub.Stop();
+                        App.RootHub.Stop();
                         wasrunning = true;
                     }
 
@@ -448,7 +441,7 @@ Suspend support not enabled.", true);
                 foreach (CompositeDeviceModel item in conLvViewModel.ControllerCol)
                 //for (int i = 0; i < 4; i++)
                 {
-                    string slide = App.rootHub.TouchpadSlide(item.DevIndex);
+                    string slide = App.RootHub.TouchpadSlide(item.DevIndex);
                     if (slide == "left")
                     {
                         //int ind = i;
@@ -528,7 +521,7 @@ Suspend support not enabled.", true);
         private void TrayIconVM_RequestShutdown(object sender, EventArgs e)
         {
             contextclose = true;
-            this.Close();
+            Close();
         }
 
         private void UpdateLastStatusMessage(object sender, DS4Windows.DebugEventArgs e)
@@ -613,20 +606,19 @@ Suspend support not enabled.", true);
                     }
                 }
 
-                if (App.rootHub.running)
+                if (App.RootHub.Running)
                     trayIconVM.PopulateContextMenu();
             }));
         }
 
         private void Item_RequestColorPicker(CompositeDeviceModel sender)
         {
-            ColorPickerWindow dialog = new ColorPickerWindow();
-            dialog.Owner = this;
-            dialog.colorPicker.SelectedColor = sender.CustomLightColor;
-            dialog.ColorChanged += (sender2, color) =>
-            {
-                sender.UpdateCustomLightColor(color);
-            };
+            ColorPickerWindow dialog = new ColorPickerWindow(this);
+
+            dialog.ColorPicker.SelectedColor = sender.CustomLightColor;
+
+            //TODO: fix memory leak
+            dialog.ColorChanged += (sender2, color) => sender.UpdateCustomLightColor(color);
             dialog.ShowDialog();
         }
 
@@ -644,7 +636,7 @@ Suspend support not enabled.", true);
             ControlService service = sender as ControlService;
             Dispatcher.BeginInvoke((Action)(() =>
             {
-                if (service.running)
+                if (service.Running)
                 {
                     StartStopBtn.Content = Translations.Strings.StopText;
                 }
@@ -674,10 +666,10 @@ Suspend support not enabled.", true);
             StartStopBtn.IsEnabled = false;
             App root = Application.Current as App;
             //Tester service = root.rootHubtest;
-            ControlService service = App.rootHub;
+            ControlService service = App.RootHub;
             await Task.Run(() =>
             {
-                if (service.running)
+                if (service.Running)
                     service.Stop();
                 else
                     service.Start();
@@ -869,7 +861,7 @@ Suspend support not enabled.", true);
                 {
                     if (Global.runHotPlug)
                     {
-                        Int32 Type = wParam.ToInt32();
+                            int Type = wParam.ToInt32();
                         if (Type == DBT_DEVICEARRIVAL ||
                             Type == DBT_DEVICEREMOVECOMPLETE)
                         {
@@ -935,10 +927,10 @@ Suspend support not enabled.", true);
                                     }
                                     else
                                     {
-                                        Global.LoadTempProfile(tdevice, strData[2], true, Program.rootHub);
+                                        Global.LoadTempProfile(tdevice, strData[2], true, Program.RootHub);
                                     }
 
-                                    Program.rootHub.LogDebug(Properties.Resources.UsingProfile.
+                                    Program.RootHub.LogDebug(Properties.Resources.UsingProfile.
                                         Replace("*number*", (tdevice + 1).ToString()).Replace("*Profile name*", strData[2]));
                                 }
                             }
@@ -965,7 +957,7 @@ Suspend support not enabled.", true);
             while (loopHotplug == true)
             {
                 Thread.Sleep(1500);
-                Program.rootHub.HotPlug();
+                Program.RootHub.HotPlug();
                 //TaskRunner.Run(() => { Program.rootHub.HotPlug(uiContext); });
                 lock (hotplugCounterLock)
                 {
@@ -984,7 +976,7 @@ Suspend support not enabled.", true);
             bool result = Util.RegisterNotify(source.Handle, hidGuid, ref regHandle);
             if (!result)
             {
-                App.Current.Shutdown();
+                Application.Current.Shutdown();
             }
         }
 
@@ -1020,8 +1012,8 @@ Suspend support not enabled.", true);
             hideDS4ContCk.IsEnabled = false;
             await Task.Run(() =>
             {
-                App.rootHub.Stop();
-                App.rootHub.Start();
+                App.RootHub.Stop();
+                App.RootHub.Start();
             });
 
             hideDS4ContCk.IsEnabled = true;
@@ -1035,18 +1027,18 @@ Suspend support not enabled.", true);
             updPortNum.IsEnabled = status;
             if (!status)
             {
-                App.rootHub.ChangeMotionEventStatus(status);
+                App.RootHub.ChangeMotionEventStatus(status);
                 await Task.Delay(100).ContinueWith((t) =>
                 {
-                    App.rootHub.ChangeUDPStatus(status);
+                    App.RootHub.ChangeUDPStatus(status);
                 });
             }
             else
             {
-                Program.rootHub.ChangeUDPStatus(status);
+                Program.RootHub.ChangeUDPStatus(status);
                 await Task.Delay(100).ContinueWith((t) =>
                 {
-                    App.rootHub.ChangeMotionEventStatus(status);
+                    App.RootHub.ChangeMotionEventStatus(status);
                 });
             }
         }
@@ -1066,8 +1058,8 @@ Suspend support not enabled.", true);
             StartStopBtn.IsEnabled = false;
             await Task.Run(() =>
             {
-                if (App.rootHub.running)
-                    App.rootHub.Stop();
+                if (App.RootHub.Running)
+                    App.RootHub.Stop();
             });
 
             StartStopBtn.IsEnabled = true;
@@ -1096,16 +1088,16 @@ Suspend support not enabled.", true);
 
         private void CheckDrivers()
         {
-            bool deriverinstalled = Global.IsViGEmBusInstalled();
-            if (!deriverinstalled)
-            {
-                Process p = new Process();
-                p.StartInfo.FileName = $"{Global.exelocation}";
-                p.StartInfo.Arguments = "-driverinstall";
-                p.StartInfo.Verb = "runas";
-                try { p.Start(); }
-                catch { }
-            }
+            if (Global.IsViGEmInstalled)
+                return;
+            
+            Process p = new Process();
+            p.StartInfo.FileName = $"{Global.exelocation}";
+            p.StartInfo.Arguments = "-driverinstall";
+            p.StartInfo.Verb = "runas";
+
+            try { p.Start(); }
+            catch { }
         }
 
         private void ImportProfBtn_Click(object sender, RoutedEventArgs e)
@@ -1273,8 +1265,8 @@ Suspend support not enabled.", true);
             preserveSize = true;
             if (!editor.Keepsize)
             {
-                this.Width = oldSize.Width;
-                this.Height = oldSize.Height;
+                Width = oldSize.Width;
+                Height = oldSize.Height;
             }
             else
             {
@@ -1303,8 +1295,8 @@ Suspend support not enabled.", true);
                 preserveSize = false;
                 oldSize.Width = Width;
                 oldSize.Height = Height;
-                this.Width = 1000;
-                this.Height = 650;
+                Width = 1000;
+                Height = 650;
                 editor = new ProfileEditor(device);
                 editor.CreatedProfile += Editor_CreatedProfile;
                 editor.Closed += ProfileEditor_Closed;

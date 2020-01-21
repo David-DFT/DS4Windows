@@ -34,9 +34,9 @@ namespace DS4WinWPF.DS4Forms.ViewModels
                     lightbarColBrush.Color = new System.Windows.Media.Color()
                     {
                         A = 255,
-                        R = color.red,
-                        G = color.green,
-                        B = color.blue
+                        R = color.Red,
+                        G = color.Green,
+                        B = color.Blue
                     };
                     tempBrush = lightbarColBrush as System.Windows.Media.Brush;
                 }
@@ -58,9 +58,9 @@ namespace DS4WinWPF.DS4Forms.ViewModels
                 return new System.Windows.Media.Color()
                 {
                     A = 255,
-                    R = color.red,
-                    G = color.green,
-                    B = color.blue
+                    R = color.Red,
+                    G = color.Green,
+                    B = color.Blue
                 };
             }
         }
@@ -71,7 +71,7 @@ namespace DS4WinWPF.DS4Forms.ViewModels
             get
             {
                 ref DS4Color color = ref Global.MainColor[device];
-                return $"#FF{color.red.ToString("X2")}{color.green.ToString("X2")}{color.blue.ToString("X2")}";
+                return $"#FF{color.Red.ToString("X2")}{color.Green.ToString("X2")}{color.Blue.ToString("X2")}";
                 /*return new System.Windows.Media.Color()
                 {
                     A = 255,
@@ -86,10 +86,10 @@ namespace DS4WinWPF.DS4Forms.ViewModels
 
         public int MainColorR
         {
-            get => Global.MainColor[device].red;
+            get => Global.MainColor[device].Red;
             set
             {
-                Global.MainColor[device].red = (byte)value;
+                Global.MainColor[device].Red = (byte)value;
                 MainColorRChanged?.Invoke(this, EventArgs.Empty);
             }
         }
@@ -97,16 +97,16 @@ namespace DS4WinWPF.DS4Forms.ViewModels
 
         public string MainColorRString
         {
-            get => $"#{ Global.MainColor[device].red.ToString("X2")}FF0000";
+            get => $"#{ Global.MainColor[device].Red.ToString("X2")}FF0000";
         }
         public event EventHandler MainColorRStringChanged;
 
         public int MainColorG
         {
-            get => Global.MainColor[device].green;
+            get => Global.MainColor[device].Green;
             set
             {
-                Global.MainColor[device].green = (byte)value;
+                Global.MainColor[device].Green = (byte)value;
                 MainColorGChanged?.Invoke(this, EventArgs.Empty);
             }
         }
@@ -114,16 +114,16 @@ namespace DS4WinWPF.DS4Forms.ViewModels
 
         public string MainColorGString
         {
-            get => $"#{ Global.MainColor[device].green.ToString("X2")}00FF00";
+            get => $"#{ Global.MainColor[device].Green.ToString("X2")}00FF00";
         }
         public event EventHandler MainColorGStringChanged;
 
         public int MainColorB
         {
-            get => Global.MainColor[device].blue;
+            get => Global.MainColor[device].Blue;
             set
             {
-                Global.MainColor[device].blue = (byte)value;
+                Global.MainColor[device].Blue = (byte)value;
                 MainColorBChanged?.Invoke(this, EventArgs.Empty);
             }
         }
@@ -131,7 +131,7 @@ namespace DS4WinWPF.DS4Forms.ViewModels
 
         public string MainColorBString
         {
-            get => $"#{ Global.MainColor[device].blue.ToString("X2")}0000FF";
+            get => $"#{ Global.MainColor[device].Blue.ToString("X2")}0000FF";
         }
         public event EventHandler MainColorBStringChanged;
 
@@ -140,17 +140,17 @@ namespace DS4WinWPF.DS4Forms.ViewModels
             get
             {
                 ref DS4Color color = ref Global.LowColor[device];
-                return $"#FF{color.red.ToString("X2")}{color.green.ToString("X2")}{color.blue.ToString("X2")}";
+                return $"#FF{color.Red.ToString("X2")}{color.Green.ToString("X2")}{color.Blue.ToString("X2")}";
             }
         }
         public event EventHandler LowColorChanged;
 
         public int LowColorR
         {
-            get => Global.LowColor[device].red;
+            get => Global.LowColor[device].Red;
             set
             {
-                Global.LowColor[device].red = (byte)value;
+                Global.LowColor[device].Red = (byte)value;
                 LowColorRChanged?.Invoke(this, EventArgs.Empty);
                 LowColorRStringChanged?.Invoke(this, EventArgs.Empty);
             }
@@ -159,16 +159,16 @@ namespace DS4WinWPF.DS4Forms.ViewModels
 
         public string LowColorRString
         {
-            get => $"#{ Global.LowColor[device].red.ToString("X2")}FF0000";
+            get => $"#{ Global.LowColor[device].Red.ToString("X2")}FF0000";
         }
         public event EventHandler LowColorRStringChanged;
 
         public int LowColorG
         {
-            get => Global.LowColor[device].green;
+            get => Global.LowColor[device].Green;
             set
             {
-                Global.LowColor[device].green = (byte)value;
+                Global.LowColor[device].Green = (byte)value;
                 LowColorGChanged?.Invoke(this, EventArgs.Empty);
                 LowColorGStringChanged?.Invoke(this, EventArgs.Empty);
             }
@@ -177,16 +177,16 @@ namespace DS4WinWPF.DS4Forms.ViewModels
 
         public string LowColorGString
         {
-            get => $"#{ Global.LowColor[device].green.ToString("X2")}00FF00";
+            get => $"#{ Global.LowColor[device].Green.ToString("X2")}00FF00";
         }
         public event EventHandler LowColorGStringChanged;
 
         public int LowColorB
         {
-            get => Global.LowColor[device].blue;
+            get => Global.LowColor[device].Blue;
             set
             {
-                Global.LowColor[device].blue = (byte)value;
+                Global.LowColor[device].Blue = (byte)value;
                 LowColorBChanged?.Invoke(this, EventArgs.Empty);
                 LowColorBStringChanged?.Invoke(this, EventArgs.Empty);
             }
@@ -195,7 +195,7 @@ namespace DS4WinWPF.DS4Forms.ViewModels
 
         public string LowColorBString
         {
-            get => $"#{ Global.LowColor[device].blue.ToString("X2")}0000FF";
+            get => $"#{ Global.LowColor[device].Blue.ToString("X2")}0000FF";
         }
         public event EventHandler LowColorBStringChanged;
 
@@ -207,9 +207,9 @@ namespace DS4WinWPF.DS4Forms.ViewModels
                 return new System.Windows.Media.Color()
                 {
                     A = 255,
-                    R = color.red,
-                    B = color.blue,
-                    G = color.green
+                    R = color.Red,
+                    B = color.Blue,
+                    G = color.Green
                 };
             }
         }
@@ -231,12 +231,12 @@ namespace DS4WinWPF.DS4Forms.ViewModels
             get
             {
                 ref DS4Color color = ref Global.FlashColor[device];
-                if (color.red == 0 && color.green == 0 && color.blue == 0)
+                if (color.Red == 0 && color.Green == 0 && color.Blue == 0)
                 {
                     color = ref Global.MainColor[device];
                 }
 
-                return $"#FF{color.red.ToString("X2")}{color.green.ToString("X2")}{color.blue.ToString("X2")}";
+                return $"#FF{color.Red.ToString("X2")}{color.Green.ToString("X2")}{color.Blue.ToString("X2")}";
             }
         }
         public event EventHandler FlashColorChanged;
@@ -246,7 +246,7 @@ namespace DS4WinWPF.DS4Forms.ViewModels
             get
             {
                 ref DS4Color color = ref Global.FlashColor[device];
-                if (color.red == 0 && color.green == 0 && color.blue == 0)
+                if (color.Red == 0 && color.Green == 0 && color.Blue == 0)
                 {
                     color = ref Global.MainColor[device];
                 }
@@ -254,9 +254,9 @@ namespace DS4WinWPF.DS4Forms.ViewModels
                 return new System.Windows.Media.Color()
                 {
                     A = 255,
-                    R = color.red,
-                    B = color.blue,
-                    G = color.green
+                    R = color.Red,
+                    B = color.Blue,
+                    G = color.Green
                 };
             }
         }
@@ -274,10 +274,7 @@ namespace DS4WinWPF.DS4Forms.ViewModels
         public bool ColorBatteryPercent
         {
             get => Global.LedAsBatteryIndicator[device];
-            set
-            {
-                Global.LedAsBatteryIndicator[device] = value;
-            }
+            set => Global.LedAsBatteryIndicator[device] = value;
         }
 
         public string ChargingColor
@@ -285,7 +282,7 @@ namespace DS4WinWPF.DS4Forms.ViewModels
             get
             {
                 ref DS4Color color = ref Global.ChargingColor[device];
-                return $"#FF{color.red.ToString("X2")}{color.green.ToString("X2")}{color.blue.ToString("X2")}";
+                return $"#FF{color.Red.ToString("X2")}{color.Green.ToString("X2")}{color.Blue.ToString("X2")}";
             }
         }
         public event EventHandler ChargingColorChanged;
@@ -298,9 +295,9 @@ namespace DS4WinWPF.DS4Forms.ViewModels
                 return new System.Windows.Media.Color()
                 {
                     A = 255,
-                    R = color.red,
-                    B = color.blue,
-                    G = color.green
+                    R = color.Red,
+                    B = color.Blue,
+                    G = color.Green
                 };
             }
         }
@@ -499,11 +496,11 @@ namespace DS4WinWPF.DS4Forms.ViewModels
                 int type = 0;
                 switch (Global.OutContType[device])
                 {
-                    case OutContType.X360:
+                    case OutControllerType.X360:
                         type = 0;
                         break;
 
-                    case OutContType.DS4:
+                    case OutControllerType.DS4:
                         type = 1;
                         break;
 
@@ -524,18 +521,18 @@ namespace DS4WinWPF.DS4Forms.ViewModels
             }
         }
 
-        public OutContType TempConType
+        public OutControllerType TempConType
         {
             get
             {
-                OutContType result = OutContType.None;
+                OutControllerType result = OutControllerType.None;
                 switch (tempControllerIndex)
                 {
                     case 0:
-                        result = OutContType.X360; break;
+                        result = OutControllerType.X360; break;
                     case 1:
-                        result = OutContType.DS4; break;
-                    default: result = OutContType.X360; break;
+                        result = OutControllerType.DS4; break;
+                    default: result = OutControllerType.X360; break;
                 }
                 return result;
             }
@@ -577,7 +574,7 @@ namespace DS4WinWPF.DS4Forms.ViewModels
         }
 
 
-        public OutContType ContType
+        public OutControllerType ContType
         {
             get => Global.OutContType[device];
         }
@@ -1001,12 +998,12 @@ namespace DS4WinWPF.DS4Forms.ViewModels
 
         public bool UseTouchMouse
         {
-            get => !Global.UseTPforControls[device];
+            get => !Global.UseTouchPadForControls[device];
             set
             {
-                bool temp = !Global.UseTPforControls[device];
+                bool temp = !Global.UseTouchPadForControls[device];
                 if (temp == value) return;
-                Global.UseTPforControls[device] = !value;
+                Global.UseTouchPadForControls[device] = !value;
                 UseTouchMouseChanged?.Invoke(this, EventArgs.Empty);
             }
         }
@@ -1014,12 +1011,12 @@ namespace DS4WinWPF.DS4Forms.ViewModels
 
         public bool UseTouchControls
         {
-            get => Global.UseTPforControls[device];
+            get => Global.UseTouchPadForControls[device];
             set
             {
-                bool temp = Global.UseTPforControls[device];
+                bool temp = Global.UseTouchPadForControls[device];
                 if (temp == value) return;
-                Global.UseTPforControls[device] = value;
+                Global.UseTouchPadForControls[device] = value;
                 UseTouchControlsChanged?.Invoke(this, EventArgs.Empty);
             }
         }
@@ -1106,12 +1103,9 @@ namespace DS4WinWPF.DS4Forms.ViewModels
         public bool TouchDoubleTap
         {
             get => Global.DoubleTap[device];
-            set
-            {
-                Global.DoubleTap[device] = value;
-            }
+            set => Global.DoubleTap[device] = value;
         }
-        
+
         public bool TouchJitter
         {
             get => Global.TouchpadJitterCompensation[device];
@@ -1137,19 +1131,13 @@ namespace DS4WinWPF.DS4Forms.ViewModels
         public bool LowerRightTouchRMB
         {
             get => Global.LowerRCOn[device];
-            set
-            {
-                Global.LowerRCOn[device] = value;
-            }
+            set => Global.LowerRCOn[device] = value;
         }
 
         public bool StartTouchpadOff
         {
             get => Global.StartTouchpadOff[device];
-            set
-            {
-                Global.StartTouchpadOff[device] = value;
-            }
+            set => Global.StartTouchpadOff[device] = value;
         }
 
         public bool TouchTrackball
@@ -1242,38 +1230,25 @@ namespace DS4WinWPF.DS4Forms.ViewModels
         public int GyroMouseDeadZone
         {
             get => Global.GyroMouseDeadZone[device];
-            set
-            {
-                Global.SetGyroMouseDeadZone(device, value, App.rootHub);
-
-            }
+            set => Global.SetGyroMouseDeadZone(device, value, App.RootHub);
         }
 
         public bool GyroMouseToggle
         {
             get => Global.GyroMouseToggle[device];
-            set
-            {
-                Global.SetGyroMouseToggle(device, value, App.rootHub);
-            }
+            set => Global.SetGyroMouseToggle(device, value, App.RootHub);
         }
 
         public bool GyroMouseStickTurns
         {
             get => Global.GyroMouseStickTriggerTurns[device];
-            set
-            {
-                Global.GyroMouseStickTriggerTurns[device] = value;
-            }
+            set => Global.GyroMouseStickTriggerTurns[device] = value;
         }
 
         public bool GyroMouseStickToggle
         {
             get => Global.GyroMouseStickToggle[device];
-            set
-            {
-                Global.SetGyroMouseStickToggle(device, value, App.rootHub);
-            }
+            set => Global.SetGyroMouseStickToggle(device, value, App.RootHub);
         }
 
         public int GyroMouseStickDeadZone
@@ -1406,7 +1381,7 @@ namespace DS4WinWPF.DS4Forms.ViewModels
             this.device = device;
             funcDevNum = device < 4 ? device : 0;
             tempControllerIndex = ControllerTypeIndex;
-            Global.outDevTypeTemp[device] = OutContType.X360;
+            Global.outDevTypeTemp[device] = OutControllerType.X360;
             tempBtPollRate = Global.BTPollRate[device];
 
             ImageSourceConverter sourceConverter = new ImageSourceConverter();
@@ -1451,22 +1426,22 @@ namespace DS4WinWPF.DS4Forms.ViewModels
 
         public void UpdateFlashColor(System.Windows.Media.Color color)
         {
-            Global.FlashColor[device] = new DS4Color() { red = color.R, green = color.G, blue = color.B };
+            Global.FlashColor[device] = new DS4Color() { Red = color.R, Green = color.G, Blue = color.B };
             FlashColorChanged?.Invoke(this, EventArgs.Empty);
         }
 
         public void UpdateMainColor(System.Windows.Media.Color color)
         {
-            Global.MainColor[device] = new DS4Color() { red = color.R, green = color.G, blue = color.B };
+            Global.MainColor[device] = new DS4Color() { Red = color.R, Green = color.G, Blue = color.B };
             MainColorChanged?.Invoke(this, EventArgs.Empty);
         }
 
         public void UpdateLowColor(System.Windows.Media.Color color)
         {
             ref DS4Color lowColor = ref Global.LowColor[device];
-            lowColor.red = color.R;
-            lowColor.green = color.G;
-            lowColor.blue = color.B;
+            lowColor.Red = color.R;
+            lowColor.Green = color.G;
+            lowColor.Blue = color.B;
 
             LowColorChanged?.Invoke(this, EventArgs.Empty);
             LowColorRChanged?.Invoke(this, EventArgs.Empty);
@@ -1481,10 +1456,10 @@ namespace DS4WinWPF.DS4Forms.ViewModels
         {
             if (device < 4)
             {
-                DS4Color dcolor = new DS4Color() { red = color.R, green = color.G, blue = color.B };
-                DS4LightBar.forcedColor[device] = dcolor;
-                DS4LightBar.forcedFlash[device] = 0;
-                DS4LightBar.forcelight[device] = true;
+                DS4Color dcolor = new DS4Color() { Red = color.R, Green = color.G, Blue = color.B };
+                DS4LightBar.ForcedColor[device] = dcolor;
+                DS4LightBar.ForcedFlash[device] = 0;
+                DS4LightBar.Forcelight[device] = true;
             }
         }
 
@@ -1492,10 +1467,10 @@ namespace DS4WinWPF.DS4Forms.ViewModels
         {
             if (device < 4)
             {
-                DS4Color dcolor = new DS4Color() { red = color.R, green = color.G, blue = color.B };
-                DS4LightBar.forcedColor[device] = dcolor;
-                DS4LightBar.forcedFlash[device] = 0;
-                DS4LightBar.forcelight[device] = true;
+                DS4Color dcolor = new DS4Color() { Red = color.R, Green = color.G, Blue = color.B };
+                DS4LightBar.ForcedColor[device] = dcolor;
+                DS4LightBar.ForcedFlash[device] = 0;
+                DS4LightBar.Forcelight[device] = true;
             }
         }
 
@@ -1503,18 +1478,18 @@ namespace DS4WinWPF.DS4Forms.ViewModels
         {
             if (device < 4)
             {
-                DS4LightBar.forcedColor[device] = new DS4Color(0, 0, 0);
-                DS4LightBar.forcedFlash[device] = 0;
-                DS4LightBar.forcelight[device] = false;
+                DS4LightBar.ForcedColor[device] = new DS4Color(0, 0, 0);
+                DS4LightBar.ForcedFlash[device] = 0;
+                DS4LightBar.Forcelight[device] = false;
             }
         }
 
         public void UpdateChargingColor(System.Windows.Media.Color color)
         {
             ref DS4Color chargeColor = ref Global.ChargingColor[device];
-            chargeColor.red = color.R;
-            chargeColor.green = color.G;
-            chargeColor.blue = color.B;
+            chargeColor.Red = color.R;
+            chargeColor.Green = color.G;
+            chargeColor.Blue = color.B;
             ChargingColorChanged?.Invoke(this, EventArgs.Empty);
         }
 
@@ -1745,43 +1720,43 @@ namespace DS4WinWPF.DS4Forms.ViewModels
         {
             // Custom curve editor web link clicked. Open the bezier curve editor web app usign the default browser app and pass on current custom definition as a query string parameter.
             // The Process.Start command using HTML page doesn't support query parameters, so if there is a custom curve definition then lookup the default browser executable name from a sysreg.
-            string defaultBrowserCmd = String.Empty;
+            string defaultBrowserCmd = string.Empty;
             try
             {
-                if (!String.IsNullOrEmpty(customDefinition))
+                if (!string.IsNullOrEmpty(customDefinition))
                 {
-                    string progId = String.Empty;
+                    string progId = string.Empty;
                     using (RegistryKey userChoiceKey = Registry.CurrentUser.OpenSubKey("Software\\Microsoft\\Windows\\Shell\\Associations\\UrlAssociations\\http\\UserChoice"))
                     {
                         progId = userChoiceKey?.GetValue("Progid")?.ToString();
                     }
 
-                    if (!String.IsNullOrEmpty(progId))
+                    if (!string.IsNullOrEmpty(progId))
                     {
                         using (RegistryKey browserPathCmdKey = Registry.ClassesRoot.OpenSubKey($"{progId}\\shell\\open\\command"))
                         {
                             defaultBrowserCmd = browserPathCmdKey?.GetValue(null).ToString();
                         }
 
-                        if (!String.IsNullOrEmpty(defaultBrowserCmd))
+                        if (!string.IsNullOrEmpty(defaultBrowserCmd))
                         {
                             int iStartPos = (defaultBrowserCmd[0] == '"' ? 1 : 0);
                             defaultBrowserCmd = defaultBrowserCmd.Substring(iStartPos, defaultBrowserCmd.LastIndexOf(".exe") + 4 - iStartPos);
                             if (Path.GetFileName(defaultBrowserCmd).ToLower() == "launchwinapp.exe")
-                                defaultBrowserCmd = String.Empty;
+                                defaultBrowserCmd = string.Empty;
                         }
 
                         // Fallback to IE executable if the default browser HTML shell association is for some reason missing or is not set
-                        if (String.IsNullOrEmpty(defaultBrowserCmd))
+                        if (string.IsNullOrEmpty(defaultBrowserCmd))
                             defaultBrowserCmd = "C:\\Program Files\\Internet Explorer\\iexplore.exe";
 
                         if (!File.Exists(defaultBrowserCmd))
-                            defaultBrowserCmd = String.Empty;
+                            defaultBrowserCmd = string.Empty;
                     }
                 }
 
                 // Launch custom bezier editor webapp using a default browser executable command or via a default shell command. The default shell exeution doesn't support query parameters.
-                if (!String.IsNullOrEmpty(defaultBrowserCmd))
+                if (!string.IsNullOrEmpty(defaultBrowserCmd))
                     System.Diagnostics.Process.Start(defaultBrowserCmd, $"\"file:///{Global.exedirpath}\\BezierCurveEditor\\index.html?curve={customDefinition.Replace(" ", "")}\"");
                 else
                     System.Diagnostics.Process.Start($"{Global.exedirpath}\\BezierCurveEditor\\index.html");

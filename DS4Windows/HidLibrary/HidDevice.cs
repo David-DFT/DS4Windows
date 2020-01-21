@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using System.Threading;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Win32.SafeHandles;
@@ -446,7 +445,7 @@ namespace DS4Windows
 
         }
 
-        private SafeFileHandle OpenHandle(String devicePathName, Boolean isExclusive)
+        private SafeFileHandle OpenHandle(string devicePathName, bool isExclusive)
         {
             SafeFileHandle hidHandle;
 
@@ -462,17 +461,17 @@ namespace DS4Windows
             return hidHandle;
         }
 
-        public bool readFeatureData(byte[] inputBuffer)
+        public bool ReadFeatureData(byte[] inputBuffer)
         {
             return NativeMethods.HidD_GetFeature(safeReadHandle.DangerousGetHandle(), inputBuffer, inputBuffer.Length);
         }
 
-        public void resetSerial()
+        public void ResetSerial()
         {
             serial = null;
         }
 
-        public string readSerial()
+        public string ReadSerial()
         {
             if (serial != null)
                 return serial;
@@ -485,8 +484,8 @@ namespace DS4Windows
             {
                 byte[] buffer = new byte[16];
                 buffer[0] = 18;
-                if (readFeatureData(buffer))
-                    serial = String.Format("{0:X02}:{1:X02}:{2:X02}:{3:X02}:{4:X02}:{5:X02}",
+                if (ReadFeatureData(buffer))
+                    serial = string.Format("{0:X02}:{1:X02}:{2:X02}:{3:X02}:{4:X02}:{5:X02}",
                         buffer[6], buffer[5], buffer[4], buffer[3], buffer[2], buffer[1]);
             }
             else
@@ -512,17 +511,17 @@ namespace DS4Windows
             {
                 string MACAddr = string.Empty;
 
-                AppLogger.LogToGui($"WARNING: Failed to read serial# from a gamepad ({this._deviceAttributes.VendorHexId}/{this._deviceAttributes.ProductHexId}). Generating MAC address from a device path. From now on you should connect this gamepad always into the same USB port or BT pairing host to keep the same device path.", true);
+                AppLogger.LogToGui($"WARNING: Failed to read serial# from a gamepad ({_deviceAttributes.VendorHexId}/{_deviceAttributes.ProductHexId}). Generating MAC address from a device path. From now on you should connect this gamepad always into the same USB port or BT pairing host to keep the same device path.", true);
 
                 try
                 {
                     // Substring: \\?\hid#vid_054c&pid_09cc&mi_03#7&1f882A25&0&0001#{4d1e55b2-f16f-11cf-88cb-001111000030} -> \\?\hid#vid_054c&pid_09cc&mi_03#7&1f882A25&0&0001#
-                    int endPos = this.DevicePath.LastIndexOf('{');
+                    int endPos = DevicePath.LastIndexOf('{');
                     if (endPos < 0)
-                        endPos = this.DevicePath.Length;
+                        endPos = DevicePath.Length;
 
                     // String array: \\?\hid#vid_054c&pid_09cc&mi_03#7&1f882A25&0&0001# -> [0]=\\?\hidvid_054c, [1]=pid_09cc, [2]=mi_037, [3]=1f882A25, [4]=0, [5]=0001
-                    string[] devPathItems = this.DevicePath.Substring(0, endPos).Replace("#", "").Replace("-", "").Replace("{", "").Replace("}", "").Split('&');
+                    string[] devPathItems = DevicePath.Substring(0, endPos).Replace("#", "").Replace("-", "").Replace("{", "").Replace("}", "").Split('&');
 
                     if (devPathItems.Length >= 3)
                         MACAddr = devPathItems[devPathItems.Length - 3].ToUpper()                   // 1f882A25
@@ -531,8 +530,8 @@ namespace DS4Windows
                     else if (devPathItems.Length >= 1)
                         // Device and usb hub and port identifiers missing in devicePath string. Fallback to use vendor and product ID values and 
                         // take a number from the last part of the devicePath. Hopefully the last part is a usb port number as it usually should be.
-                        MACAddr = this._deviceAttributes.VendorId.ToString("X4")
-                                  + this._deviceAttributes.ProductId.ToString("X4")
+                        MACAddr = _deviceAttributes.VendorId.ToString("X4")
+                                  + _deviceAttributes.ProductId.ToString("X4")
                                   + devPathItems[devPathItems.Length - 1].TrimStart('0').ToUpper();
 
                     if (!string.IsNullOrEmpty(MACAddr))
@@ -546,7 +545,7 @@ namespace DS4Windows
                 }
                 catch (Exception e)
                 {
-                    AppLogger.LogToGui($"ERROR: Failed to generate runtime MAC address from device path {this.DevicePath}. {e.Message}", true);
+                    AppLogger.LogToGui($"ERROR: Failed to generate runtime MAC address from device path {DevicePath}. {e.Message}", true);
                     serial = BLANK_SERIAL;
                 }
             }

@@ -66,7 +66,7 @@ namespace DS4WinWPF.DS4Forms.ViewModels
         public TrayIconViewModel(ControlService service, ProfileList profileListHolder)
         {
             this.profileListHolder = profileListHolder;
-            this.controlService = service;
+            controlService = service;
             contextMenu = new ContextMenu();
             iconSource = Global.UseWhiteIcon ? ICON_WHITE : ICON_COLOR;
             changeServiceItem = new MenuItem() { Header = "Start" };
@@ -107,8 +107,8 @@ namespace DS4WinWPF.DS4Forms.ViewModels
 
         private void Service_RunningChanged(object sender, EventArgs e)
         {
-            string temp = controlService.running ? "Stop" : "Start";
-            App.Current.Dispatcher.BeginInvoke((Action)(() =>
+            string temp = controlService.Running ? "Stop" : "Start";
+            Application.Current.Dispatcher.BeginInvoke((Action)(() =>
             {
                 changeServiceItem.Header = temp;
                 changeServiceItem.IsEnabled = true;
@@ -190,7 +190,7 @@ namespace DS4WinWPF.DS4Forms.ViewModels
             foreach (ControllerHolder holder in controllerList)
             {
                 DS4Device tempDev = holder.Device;
-                if (tempDev.Synced && !tempDev.Charging)
+                if (tempDev.IsSynced && !tempDev.IsCharging)
                 {
                     MenuItem subitem = new MenuItem() { Header = $"Disconnect Controller {idx+1}" };
                     subitem.Click += DisconnectMenuItem_Click;
@@ -249,14 +249,14 @@ namespace DS4WinWPF.DS4Forms.ViewModels
             int idx = Convert.ToInt32(item.Tag);
             ControllerHolder holder = controllerList[idx];
             DS4Device tempDev = holder?.Device;
-            if (tempDev != null && tempDev.Synced && !tempDev.Charging)
+            if (tempDev != null && tempDev.IsSynced && !tempDev.IsCharging)
             {
-                if (tempDev.ConnectionType == ConnectionType.BT)
+                if (tempDev.IsBT)
                 {
                     //tempDev.StopUpdate();
                     tempDev.DisconnectBT();
                 }
-                else if (tempDev.ConnectionType == ConnectionType.SONYWA)
+                else if (tempDev.IsSONYWA)
                 {
                     tempDev.DisconnectDongle();
                 }
@@ -270,7 +270,7 @@ namespace DS4WinWPF.DS4Forms.ViewModels
             //IEnumerable<DS4Device> devices = DS4Devices.getDS4Controllers();
             int idx = 0;
             _colLocker.EnterWriteLock();
-            foreach (DS4Device currentDev in controlService.slotManager.ControllerColl)
+            foreach (DS4Device currentDev in controlService.SlotManager.ControllerColl)
             {
                 controllerList.Add(new ControllerHolder(currentDev, idx));
                 idx++;
@@ -295,7 +295,7 @@ namespace DS4WinWPF.DS4Forms.ViewModels
             foreach (ControllerHolder holder in controllerList)
             {
                 DS4Device currentDev = holder.Device;
-                items.Add($"{idx}: {currentDev.ConnectionType} {currentDev.Battery}%{(currentDev.Charging ? "+" : "")}");
+                items.Add($"{idx}: {currentDev.ConnectionType} {currentDev.Battery}%{(currentDev.IsCharging ? "+" : "")}");
                 idx++;
             }
             _colLocker.ExitReadLock();

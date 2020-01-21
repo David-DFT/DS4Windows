@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 
 using System.IO;
 using System.Reflection;
@@ -22,7 +21,7 @@ namespace DS4Windows
     public enum X360Controls : byte { None, LXNeg, LXPos, LYNeg, LYPos, RXNeg, RXPos, RYNeg, RYPos, LB, LT, LS, RB, RT, RS, X, Y, B, A, DpadUp, DpadRight, DpadDown, DpadLeft, Guide, Back, Start, LeftMouse, RightMouse, MiddleMouse, FourthMouse, FifthMouse, WUP, WDOWN, MouseUp, MouseDown, MouseLeft, MouseRight, Unbound };
 
     public enum SASteeringWheelEmulationAxisType: byte { None = 0, LX, LY, RX, RY, L2R2, VJoy1X, VJoy1Y, VJoy1Z, VJoy2X, VJoy2Y, VJoy2Z };
-    public enum OutContType : uint { None = 0, X360, DS4 }
+    public enum OutControllerType : uint { None = 0, X360, DS4 }
 
     public enum GyroOutMode : uint
     {
@@ -144,11 +143,11 @@ namespace DS4Windows
 
         public Ds3PadId Pad
         {
-            get { return m_Pad; }
-            set { m_Pad = value; }
+            get => m_Pad;
+            set => m_Pad = value;
         }
 
-        public Byte[] Report
+        public byte[] Report
         {
             get { return m_Report; }
         }
@@ -156,89 +155,50 @@ namespace DS4Windows
 
     public class BatteryReportArgs : EventArgs
     {
-        private int index;
-        private int level;
-        private bool charging;
+        public bool Charging { get; }
+        public int Index { get; }
+        public int Level { get; }
 
         public BatteryReportArgs(int index, int level, bool charging)
         {
-            this.index = index;
-            this.level = level;
-            this.charging = charging;
-        }
-
-        public int getIndex()
-        {
-            return index;
-        }
-
-        public int getLevel()
-        {
-            return level;
-        }
-
-        public bool isCharging()
-        {
-            return charging;
+            Index = index;
+            Level = level;
+            Charging = charging;
         }
     }
 
     public class ControllerRemovedArgs : EventArgs
     {
-        private int index;
+        public int Index { get; }
 
-        public ControllerRemovedArgs(int index)
-        {
-            this.index = index;
-        }
-
-        public int getIndex()
-        {
-            return this.index;
-        }
+        public ControllerRemovedArgs(int index) => Index = index;
     }
 
     public class DeviceStatusChangeEventArgs : EventArgs
     {
-        private int index;
+        public int Index { get; }
 
-        public DeviceStatusChangeEventArgs(int index)
-        {
-            this.index = index;
-        }
-
-        public int getIndex()
-        {
-            return index;
-        }
+        public DeviceStatusChangeEventArgs(int index) => Index = index;
     }
 
     public class SerialChangeArgs : EventArgs
     {
-        private int index;
-        private string serial;
+        public int Index { get; }
+        public string Serial { get; }
 
         public SerialChangeArgs(int index, string serial)
         {
-            this.index = index;
-            this.serial = serial;
-        }
-
-        public int getIndex()
-        {
-            return index;
-        }
-
-        public string getSerial()
-        {
-            return serial;
+            Index = index;
+            Serial = serial;
         }
     }
 
     public class Global
     {
+        private const string VIGEMBUS_GUID = "{96E42B22-F5E9-42F8-B043-ED0F932F014F}";
+
         protected static BackingStore m_Config = new BackingStore();
-        protected static Int32 m_IdleTimeout = 600000;
+        protected static int m_IdleTimeout = 600000;
         public static string exelocation = Assembly.GetExecutingAssembly().Location;
         public static string exedirpath = Directory.GetParent(exelocation).FullName;
         public static FileVersionInfo fileVersion = FileVersionInfo.GetVersionInfo(exelocation);
@@ -249,22 +209,24 @@ namespace DS4Windows
         public static string appDataPpath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\DS4Windows";
         public static bool runHotPlug = false;
         public static string[] tempprofilename = new string[5] { string.Empty, string.Empty, string.Empty, string.Empty, string.Empty };
-        public static bool[] useTempProfile = new bool[5] { false, false, false, false, false };
+        public static bool[] UseTempProfile = new bool[5] { false, false, false, false, false };
         public static bool[] tempprofileDistance = new bool[5] { false, false, false, false, false };
-        public static bool[] useDInputOnly = new bool[5] { true, true, true, true, true };
-        public static bool[] linkedProfileCheck = new bool[4] { false, false, false, false };
+        public static bool[] UseDInputOnly = new bool[5] { true, true, true, true, true };
+        public static bool[] LinkedProfileCheck = new bool[4] { false, false, false, false };
         public static bool[] touchpadActive = new bool[5] { true, true, true, true, true };
         // Used to hold device type desired from Profile Editor
-        public static OutContType[] outDevTypeTemp = new OutContType[5] { DS4Windows.OutContType.X360, DS4Windows.OutContType.X360,
-            DS4Windows.OutContType.X360, DS4Windows.OutContType.X360,
-            DS4Windows.OutContType.X360 };
+        public static OutControllerType[] outDevTypeTemp = new OutControllerType[5] { OutControllerType.X360, OutControllerType.X360,
+            OutControllerType.X360, OutControllerType.X360,
+            OutControllerType.X360 };
         // Used to hold the currently active controller output type in use for a slot
-        public static OutContType[] activeOutDevType = new OutContType[5] { DS4Windows.OutContType.None, DS4Windows.OutContType.None,
-            DS4Windows.OutContType.None, DS4Windows.OutContType.None,
-            DS4Windows.OutContType.None };
-        public static bool vigemInstalled = IsViGEmBusInstalled();
-        public static string vigembusVersion = ViGEmBusVersion();
+        public static OutControllerType[] ActiveOutDevType = new OutControllerType[5] { OutControllerType.None, OutControllerType.None,
+            OutControllerType.None, OutControllerType.None,
+            OutControllerType.None };
 
+        public static bool IsViGEmInstalled => CheckForDevice(VIGEMBUS_GUID);
+        public static string ViGEmBusVersion => GetViGEmDriverProperty(NativeMethods.DEVPKEY_Device_DriverVersion);
+        public static bool IsHidGuardianInstalled => CheckForSysDevice(@"Root\HidGuardian");
+        
         public static X360Controls[] defaultButtonMapping = { X360Controls.None, X360Controls.LXNeg, X360Controls.LXPos,
             X360Controls.LYNeg, X360Controls.LYPos, X360Controls.RXNeg, X360Controls.RXPos, X360Controls.RYNeg, X360Controls.RYPos,
             X360Controls.LB, X360Controls.LT, X360Controls.LS, X360Controls.RB, X360Controls.RT, X360Controls.RS, X360Controls.X,
@@ -290,7 +252,7 @@ namespace DS4Windows
             return temp;
         })();
 
-        public static Dictionary<X360Controls, string> xboxDefaultNames = new Dictionary<X360Controls, string>()
+        public static IReadOnlyDictionary<X360Controls, string> X360DefaultNames { get; } = new Dictionary<X360Controls, string>()
         {
             [X360Controls.LXNeg] = "Left X-Axis-",
             [X360Controls.LXPos] = "Left X-Axis+",
@@ -331,7 +293,7 @@ namespace DS4Windows
             [X360Controls.Unbound] = "Unbound",
         };
 
-        public static Dictionary<X360Controls, string> ds4DefaultNames = new Dictionary<X360Controls, string>()
+        public static IReadOnlyDictionary<X360Controls, string> DS4DefaultNames { get; } = new Dictionary<X360Controls, string>()
         {
             [X360Controls.LXNeg] = "Left X-Axis-",
             [X360Controls.LXPos] = "Left X-Axis+",
@@ -372,22 +334,23 @@ namespace DS4Windows
             [X360Controls.Unbound] = "Unbound",
         };
 
-        public static string getX360ControlString(X360Controls key, OutContType conType)
+        public static string GetX360ControlString(X360Controls key, OutControllerType type)
         {
             string result = string.Empty;
-            if (conType == DS4Windows.OutContType.X360)
+            switch (type)
             {
-                xboxDefaultNames.TryGetValue(key, out result);
-            }
-            else if (conType == DS4Windows.OutContType.DS4)
-            {
-                ds4DefaultNames.TryGetValue(key, out result);
+                case OutControllerType.X360:
+                    X360DefaultNames.TryGetValue(key, out result);
+                    break;
+                case OutControllerType.DS4:
+                    DS4DefaultNames.TryGetValue(key, out result);
+                    break;
             }
 
             return result;
         }
 
-        public static Dictionary<DS4Controls, string> ds4inputNames = new Dictionary<DS4Controls, string>()
+        public static IReadOnlyDictionary<DS4Controls, string> DS4InputNames { get; } = new Dictionary<DS4Controls, string>()
         {
             [DS4Controls.LXNeg] = "Left X-Axis-",
             [DS4Controls.LXPos] = "Left X-Axis+",
@@ -428,7 +391,7 @@ namespace DS4Windows
             [DS4Controls.SwipeDown] = "Swipe Down",
         };
 
-        public static Dictionary<DS4Controls, int> macroDS4Values = new Dictionary<DS4Controls, int>()
+        public static IReadOnlyDictionary<DS4Controls, int> MacroDS4Values { get; } = new Dictionary<DS4Controls, int>()
         {
             [DS4Controls.Cross] = 261, [DS4Controls.Circle] = 262,
             [DS4Controls.Square] = 263, [DS4Controls.Triangle] = 264,
@@ -450,13 +413,13 @@ namespace DS4Windows
             appdatapath = path;
             m_Config.m_Profile = appdatapath + "\\Profiles.xml";
             m_Config.m_Actions = appdatapath + "\\Actions.xml";
-            m_Config.m_linkedProfiles = Global.appdatapath + "\\LinkedProfiles.xml";
-            m_Config.m_controllerConfigs = Global.appdatapath + "\\ControllerConfigs.xml";
+            m_Config.m_linkedProfiles = appdatapath + "\\LinkedProfiles.xml";
+            m_Config.m_controllerConfigs = appdatapath + "\\ControllerConfigs.xml";
         }
 
         public static bool SaveDefault(string path)
         {
-            Boolean Saved = true;
+            bool Saved = true;
             XmlDocument m_Xdoc = new XmlDocument();
             try
             {
@@ -464,7 +427,7 @@ namespace DS4Windows
 
                 m_Xdoc.RemoveAll();
 
-                Node = m_Xdoc.CreateXmlDeclaration("1.0", "utf-8", String.Empty);
+                Node = m_Xdoc.CreateXmlDeclaration("1.0", "utf-8", string.Empty);
                 m_Xdoc.AppendChild(Node);
 
                 Node = m_Xdoc.CreateComment(string.Format(" Profile Configuration Data. {0} ", DateTime.Now));
@@ -485,7 +448,7 @@ namespace DS4Windows
         }
 
         /// <summary>
-        /// Check if Admin Rights are needed to write in Appliplation Directory
+        /// Check if admin rights are needed to write in application directory
         /// </summary>
         /// <returns></returns>
         public static bool AdminNeeded()
@@ -511,22 +474,16 @@ namespace DS4Windows
 
         public static bool CheckForDevice(string guid)
         {
-            bool result = false;
             Guid deviceGuid = Guid.Parse(guid);
-            NativeMethods.SP_DEVINFO_DATA deviceInfoData =
-                new NativeMethods.SP_DEVINFO_DATA();
-            deviceInfoData.cbSize =
-                System.Runtime.InteropServices.Marshal.SizeOf(deviceInfoData);
+            NativeMethods.SP_DEVINFO_DATA deviceInfoData = new NativeMethods.SP_DEVINFO_DATA();
+            deviceInfoData.cbSize = System.Runtime.InteropServices.Marshal.SizeOf(deviceInfoData);
 
-            IntPtr deviceInfoSet = NativeMethods.SetupDiGetClassDevs(ref deviceGuid, null, 0,
-                NativeMethods.DIGCF_DEVICEINTERFACE);
-            result = NativeMethods.SetupDiEnumDeviceInfo(deviceInfoSet, 0, ref deviceInfoData);
+            IntPtr deviceInfoSet = NativeMethods.SetupDiGetClassDevs(ref deviceGuid, null, 0, NativeMethods.DIGCF_DEVICEINTERFACE);
+            bool result = NativeMethods.SetupDiEnumDeviceInfo(deviceInfoSet, 0, ref deviceInfoData);
 
             if (deviceInfoSet.ToInt64() != NativeMethods.INVALID_HANDLE_VALUE)
-            {
                 NativeMethods.SetupDiDestroyDeviceInfoList(deviceInfoSet);
-            }
-
+            
             return result;
         }
 
@@ -534,10 +491,8 @@ namespace DS4Windows
         {
             bool result = false;
             Guid sysGuid = Guid.Parse("{4d36e97d-e325-11ce-bfc1-08002be10318}");
-            NativeMethods.SP_DEVINFO_DATA deviceInfoData =
-                new NativeMethods.SP_DEVINFO_DATA();
-            deviceInfoData.cbSize =
-                System.Runtime.InteropServices.Marshal.SizeOf(deviceInfoData);
+            NativeMethods.SP_DEVINFO_DATA deviceInfoData = new NativeMethods.SP_DEVINFO_DATA();
+            deviceInfoData.cbSize = System.Runtime.InteropServices.Marshal.SizeOf(deviceInfoData);
             var dataBuffer = new byte[4096];
             ulong propertyType = 0;
             var requiredSize = 0;
@@ -564,8 +519,7 @@ namespace DS4Windows
             return result;
         }
 
-        internal static string GetDeviceProperty(string deviceInstanceId,
-            NativeMethods.DEVPROPKEY prop)
+        internal static string GetDeviceProperty(string deviceInstanceId, NativeMethods.DEVPROPKEY prop)
         {
             string result = string.Empty;
             NativeMethods.SP_DEVINFO_DATA deviceInfoData = new NativeMethods.SP_DEVINFO_DATA();
@@ -578,17 +532,12 @@ namespace DS4Windows
             NativeMethods.HidD_GetHidGuid(ref hidGuid);
             IntPtr deviceInfoSet = NativeMethods.SetupDiGetClassDevs(ref hidGuid, deviceInstanceId, 0, NativeMethods.DIGCF_PRESENT | NativeMethods.DIGCF_DEVICEINTERFACE);
             NativeMethods.SetupDiEnumDeviceInfo(deviceInfoSet, 0, ref deviceInfoData);
-            if (NativeMethods.SetupDiGetDeviceProperty(deviceInfoSet, ref deviceInfoData, ref prop, ref propertyType,
-                    dataBuffer, dataBuffer.Length, ref requiredSize, 0))
-            {
+            if (NativeMethods.SetupDiGetDeviceProperty(deviceInfoSet, ref deviceInfoData, ref prop, ref propertyType, dataBuffer, dataBuffer.Length, ref requiredSize, 0))
                 result = dataBuffer.ToUTF16String();
-            }
-
+            
             if (deviceInfoSet.ToInt64() != NativeMethods.INVALID_HANDLE_VALUE)
-            {
                 NativeMethods.SetupDiDestroyDeviceInfoList(deviceInfoSet);
-            }
-
+            
             return result;
         }
 
@@ -596,46 +545,22 @@ namespace DS4Windows
         {
             string result = string.Empty;
             Guid deviceGuid = Guid.Parse(VIGEMBUS_GUID);
-            NativeMethods.SP_DEVINFO_DATA deviceInfoData =
-                new NativeMethods.SP_DEVINFO_DATA();
-            deviceInfoData.cbSize =
-                System.Runtime.InteropServices.Marshal.SizeOf(deviceInfoData);
+            NativeMethods.SP_DEVINFO_DATA deviceInfoData = new NativeMethods.SP_DEVINFO_DATA();
+            deviceInfoData.cbSize = System.Runtime.InteropServices.Marshal.SizeOf(deviceInfoData);
 
             var dataBuffer = new byte[4096];
             ulong propertyType = 0;
             var requiredSize = 0;
 
-            IntPtr deviceInfoSet = NativeMethods.SetupDiGetClassDevs(ref deviceGuid, null, 0,
-                NativeMethods.DIGCF_DEVICEINTERFACE);
+            IntPtr deviceInfoSet = NativeMethods.SetupDiGetClassDevs(ref deviceGuid, null, 0, NativeMethods.DIGCF_DEVICEINTERFACE);
             NativeMethods.SetupDiEnumDeviceInfo(deviceInfoSet, 0, ref deviceInfoData);
-            if (NativeMethods.SetupDiGetDeviceProperty(deviceInfoSet, ref deviceInfoData, ref prop, ref propertyType,
-                    dataBuffer, dataBuffer.Length, ref requiredSize, 0))
-            {
+            if (NativeMethods.SetupDiGetDeviceProperty(deviceInfoSet, ref deviceInfoData, ref prop, ref propertyType, dataBuffer, dataBuffer.Length, ref requiredSize, 0))
                 result = dataBuffer.ToUTF16String();
-            }
-
+            
             if (deviceInfoSet.ToInt64() != NativeMethods.INVALID_HANDLE_VALUE)
-            {
                 NativeMethods.SetupDiDestroyDeviceInfoList(deviceInfoSet);
-            }
-
+            
             return result;
-        }
-
-        public static bool IsHidGuardianInstalled()
-        {
-            return CheckForSysDevice(@"Root\HidGuardian");
-        }
-
-        const string VIGEMBUS_GUID = "{96E42B22-F5E9-42F8-B043-ED0F932F014F}";
-        public static bool IsViGEmBusInstalled()
-        {
-            return CheckForDevice(VIGEMBUS_GUID);
-        }
-
-        public static string ViGEmBusVersion()
-        {
-            return GetViGEmDriverProperty(NativeMethods.DEVPKEY_Device_DriverVersion);
         }
 
         public static void FindConfigLocation()
@@ -643,8 +568,8 @@ namespace DS4Windows
             if (File.Exists(exedirpath + "\\Auto Profiles.xml")
                 && File.Exists(appDataPpath + "\\Auto Profiles.xml"))
             {
-                Global.firstRun = true;
-                Global.multisavespots = true;
+                firstRun = true;
+                multisavespots = true;
             }
             else if (File.Exists(exedirpath + "\\Auto Profiles.xml"))
                 SaveWhere(exedirpath);
@@ -653,8 +578,8 @@ namespace DS4Windows
             else if (!File.Exists(exedirpath + "\\Auto Profiles.xml")
                 && !File.Exists(appDataPpath + "\\Auto Profiles.xml"))
             {
-                Global.firstRun = true;
-                Global.multisavespots = false;
+                firstRun = true;
+                multisavespots = false;
             }
         }
 
@@ -715,7 +640,7 @@ namespace DS4Windows
                 XmlNode Node;
                 XmlDocument doc = new XmlDocument();
 
-                Node = doc.CreateXmlDeclaration("1.0", "utf-8", String.Empty);
+                Node = doc.CreateXmlDeclaration("1.0", "utf-8", string.Empty);
                 doc.AppendChild(Node);
 
                 Node = doc.CreateComment(string.Format(" Auto-Profile Configuration Data. {0} ", DateTime.Now));
@@ -736,8 +661,7 @@ namespace DS4Windows
         public static event EventHandler<EventArgs> ControllerStatusChange; // called when a controller is added/removed/battery or touchpad mode changes/etc.
         public static void ControllerStatusChanged(object sender)
         {
-            if (ControllerStatusChange != null)
-                ControllerStatusChange(sender, EventArgs.Empty);
+            ControllerStatusChange?.Invoke(sender, EventArgs.Empty);
         }
 
         public static event EventHandler<BatteryReportArgs> BatteryStatusChange;
@@ -783,78 +707,73 @@ namespace DS4Windows
         // general values
         public static bool UseExclusiveMode
         {
-            set { m_Config.useExclusiveMode = value; }
-            get { return m_Config.useExclusiveMode; }
+            set => m_Config.useExclusiveMode = value;
+            get => m_Config.useExclusiveMode;
         }
 
-        public static bool getUseExclusiveMode()
+        public static bool GetUseExclusiveMode()
         {
             return m_Config.useExclusiveMode;
         }
 
         public static DateTime LastChecked
         {
-            set { m_Config.lastChecked = value; }
-            get { return m_Config.lastChecked; }
+            set => m_Config.lastChecked = value;
+            get => m_Config.lastChecked;
         }
 
         public static int CheckWhen
         {
-            set { m_Config.CheckWhen = value; }
-            get { return m_Config.CheckWhen; }
+            set => m_Config.CheckWhen = value;
+            get => m_Config.CheckWhen;
         }
 
         public static int Notifications
         {
-            set { m_Config.notifications = value; }
-            get { return m_Config.notifications; }
+            set => m_Config.notifications = value;
+            get => m_Config.notifications;
         }
 
         public static bool DCBTatStop
         {
-            set { m_Config.disconnectBTAtStop = value; }
-            get { return m_Config.disconnectBTAtStop; }
+            set => m_Config.disconnectBTAtStop = value;
+            get => m_Config.disconnectBTAtStop;
         }
 
         public static bool SwipeProfiles
         {
-            set { m_Config.swipeProfiles = value; }
-            get { return m_Config.swipeProfiles; }
+            set => m_Config.swipeProfiles = value;
+            get => m_Config.swipeProfiles;
         }
 
         public static bool DS4Mapping
         {
-            set { m_Config.ds4Mapping = value; }
-            get { return m_Config.ds4Mapping; }
+            set => m_Config.ds4Mapping = value;
+            get => m_Config.ds4Mapping;
         }
 
         public static bool QuickCharge
         {
-            set { m_Config.quickCharge = value; }
-            get { return m_Config.quickCharge; }
-        }
-
-        public static bool getQuickCharge()
-        {
-            return m_Config.quickCharge;
+            set => m_Config.quickCharge = value;
+            get => m_Config.quickCharge;
         }
 
         public static bool CloseMini
         {
-            set { m_Config.closeMini = value; }
-            get { return m_Config.closeMini; }
+            set => m_Config.closeMini = value;
+            get => m_Config.closeMini;
         }
 
         public static bool StartMinimized
         {
-            set { m_Config.startMinimized = value; }
-            get { return m_Config.startMinimized; }
+            set => m_Config.startMinimized = value;
+            get => m_Config.startMinimized;
         }
 
         public static bool MinToTaskbar
         {
-            set { m_Config.minToTaskbar = value; }
-            get { return m_Config.minToTaskbar; }
+            set => m_Config.minToTaskbar = value;
+            get => m_Config.minToTaskbar;
         }
 
         public static bool GetMinToTaskbar()
@@ -864,44 +783,44 @@ namespace DS4Windows
 
         public static int FormWidth
         {
-            set { m_Config.formWidth = value; }
-            get { return m_Config.formWidth; }
+            set => m_Config.formWidth = value;
+            get => m_Config.formWidth;
         }
 
         public static int FormHeight
         {
-            set { m_Config.formHeight = value; }
-            get { return m_Config.formHeight; }
+            set => m_Config.formHeight = value;
+            get => m_Config.formHeight;
         }
 
         public static int FormLocationX
         {
-            set { m_Config.formLocationX = value; }
-            get { return m_Config.formLocationX; }
+            set => m_Config.formLocationX = value;
+            get => m_Config.formLocationX;
         }
 
         public static int FormLocationY
         {
-            set { m_Config.formLocationY = value; }
-            get { return m_Config.formLocationY; }
+            set => m_Config.formLocationY = value;
+            get => m_Config.formLocationY;
         }
 
         public static string UseLang
         {
-            set { m_Config.useLang = value; }
-            get { return m_Config.useLang; }
+            set => m_Config.useLang = value;
+            get => m_Config.useLang;
         }
 
         public static bool DownloadLang
         {
-            set { m_Config.downloadLang = value; }
-            get { return m_Config.downloadLang; }
+            set => m_Config.downloadLang = value;
+            get => m_Config.downloadLang;
         }
 
         public static bool FlashWhenLate
         {
-            set { m_Config.flashWhenLate = value; }
-            get { return m_Config.flashWhenLate; }
+            set => m_Config.flashWhenLate = value;
+            get => m_Config.flashWhenLate;
         }
 
         public static bool getFlashWhenLate()
@@ -911,8 +830,8 @@ namespace DS4Windows
 
         public static int FlashWhenLateAt
         {
-            set { m_Config.flashWhenLateAt = value; }
-            get { return m_Config.flashWhenLateAt; }
+            set => m_Config.flashWhenLateAt = value;
+            get => m_Config.flashWhenLateAt;
         }
 
         public static int getFlashWhenLateAt()
@@ -949,33 +868,33 @@ namespace DS4Windows
 
         public static bool UseWhiteIcon
         {
-            set { m_Config.useWhiteIcon = value; }
-            get { return m_Config.useWhiteIcon; }
+            set => m_Config.useWhiteIcon = value;
+            get => m_Config.useWhiteIcon;
         }
 
         public static bool UseCustomSteamFolder
         {
-            set { m_Config.useCustomSteamFolder = value; }
-            get { return m_Config.useCustomSteamFolder; }
+            set => m_Config.useCustomSteamFolder = value;
+            get => m_Config.useCustomSteamFolder;
         }
 
         public static string CustomSteamFolder
         {
-            set { m_Config.customSteamFolder = value; }
-            get { return m_Config.customSteamFolder; }
+            set => m_Config.customSteamFolder = value;
+            get => m_Config.customSteamFolder;
         }
 
         public static bool AutoProfileRevertDefaultProfile
         {
-            set { m_Config.autoProfileRevertDefaultProfile = value; }
-            get { return m_Config.autoProfileRevertDefaultProfile; }
+            set => m_Config.autoProfileRevertDefaultProfile = value;
+            get => m_Config.autoProfileRevertDefaultProfile;
         }
 
         // controller/profile specfic values
         public static int[] ButtonMouseSensitivity => m_Config.buttonMouseSensitivity;
 
         public static byte[] RumbleBoost => m_Config.rumble;
-        public static byte getRumbleBoost(int index)
+        public static byte GetRumbleBoost(int index)
         {
             return m_Config.rumble[index];
         }
@@ -984,8 +903,8 @@ namespace DS4Windows
         {
             m_Config.rumbleAutostopTime[index] = value;
             
-            DS4Device tempDev = Program.rootHub.DS4Controllers[index];
-            if (tempDev != null && tempDev.isSynced())
+            DS4Device tempDev = Program.RootHub.Controllers[index].Device;
+            if (tempDev != null && tempDev.IsSynced)
                 tempDev.RumbleAutostopTime = value;
         }
 
@@ -995,7 +914,7 @@ namespace DS4Windows
         }
 
         public static double[] Rainbow => m_Config.rainbow;
-        public static double getRainbow(int index)
+        public static double GetRainbow(int index)
         {
             return m_Config.rainbow[index];
         }
@@ -1019,7 +938,7 @@ namespace DS4Windows
         }
 
         public static int[] IdleDisconnectTimeout => m_Config.idleDisconnectTimeout;
-        public static int getIdleDisconnectTimeout(int index)
+        public static int GetIdleDisconnectTimeout(int index)
         {
             return m_Config.idleDisconnectTimeout[index];
         }
@@ -1042,19 +961,19 @@ namespace DS4Windows
         }
 
         public static byte[] FlashType => m_Config.flashType;
-        public static byte getFlashType(int index)
+        public static byte GetFlashType(int index)
         {
             return m_Config.flashType[index];
         }
 
         public static int[] FlashAt => m_Config.flashAt;
-        public static int getFlashAt(int index)
+        public static int GetFlashAt(int index)
         {
             return m_Config.flashAt[index];
         }
 
         public static bool[] LedAsBatteryIndicator => m_Config.ledAsBattery;
-        public static bool getLedAsBatteryIndicator(int index)
+        public static bool GetLedAsBatteryIndicator(int index)
         {
             return m_Config.ledAsBattery[index];
         }
@@ -1066,23 +985,23 @@ namespace DS4Windows
         }
 
         public static bool[] DinputOnly => m_Config.dinputOnly;
-        public static bool getDInputOnly(int index)
+        public static bool GetDInputOnly(int index)
         {
             return m_Config.dinputOnly[index];
         }
 
         public static bool[] StartTouchpadOff => m_Config.startTouchpadOff;
 
-        public static bool[] UseTPforControls => m_Config.useTPforControls;
-        public static bool getUseTPforControls(int index)
+        public static bool[] UseTouchPadForControls => m_Config.UseTouchPadForControls;
+        public static bool GetUseTouchPadForControls(int index)
         {
-            return m_Config.useTPforControls[index];
+            return m_Config.UseTouchPadForControls[index];
         }
 
         public static bool[] UseSAforMouse => m_Config.useSAforMouse;
         public static bool isUsingSAforMouse(int index)
         {
-            return m_Config.gyroOutMode[index] == DS4Windows.GyroOutMode.Mouse;
+            return m_Config.gyroOutMode[index] == GyroOutMode.Mouse;
         }
 
         public static string[] SATriggers => m_Config.sATriggers;
@@ -1223,13 +1142,13 @@ namespace DS4Windows
             => m_Config.SetGyroMouseToggle(index, value, control);
 
         public static DS4Color[] MainColor => m_Config.m_Leds;
-        public static ref DS4Color getMainColor(int index)
+        public static ref DS4Color GetMainColor(int index)
         {
             return ref m_Config.m_Leds[index];
         }
 
         public static DS4Color[] LowColor => m_Config.m_LowLeds;
-        public static ref DS4Color getLowColor(int index)
+        public static ref DS4Color GetLowColor(int index)
         {
             return ref m_Config.m_LowLeds[index];
         }
@@ -1241,13 +1160,13 @@ namespace DS4Windows
         }
 
         public static DS4Color[] CustomColor => m_Config.m_CustomLeds;
-        public static ref DS4Color getCustomColor(int index)
+        public static ref DS4Color GetCustomColor(int index)
         {
             return ref m_Config.m_CustomLeds[index];
         }
 
         public static bool[] UseCustomLed => m_Config.useCustomLeds;
-        public static bool getUseCustomLed(int index)
+        public static bool GetUseCustomLed(int index)
         {
             return m_Config.useCustomLeds[index];
         }
@@ -1504,7 +1423,7 @@ namespace DS4Windows
         }
 
         public static int[] BTPollRate => m_Config.btPollRate;
-        public static int getBTPollRate(int index)
+        public static int GetBTPollRate(int index)
         {
             return m_Config.btPollRate[index];
         }
@@ -1582,12 +1501,12 @@ namespace DS4Windows
         }
 
         public static double[] TrackballFriction => m_Config.trackballFriction;
-        public static double getTrackballFriction(int index)
+        public static double GetTrackballFriction(int index)
         {
             return m_Config.trackballFriction[index];
         }
 
-        public static OutContType[] OutContType => m_Config.outputDevType;
+        public static OutControllerType[] OutContType => m_Config.outputDevType;
         public static string[] LaunchProgram => m_Config.launchProgram;
         public static string[] ProfilePath => m_Config.profilePath;
         public static string[] OlderProfilePath => m_Config.olderProfilePath;
@@ -1737,13 +1656,13 @@ namespace DS4Windows
             return defaultButtonMapping[(int)dc];
         }
 
-        public static bool containsLinkedProfile(string serial)
+        public static bool ContainsLinkedProfile(string serial)
         {
             string tempSerial = serial.Replace(":", string.Empty);
             return m_Config.linkedProfiles.ContainsKey(tempSerial);
         }
 
-        public static string getLinkedProfile(string serial)
+        public static string GetLinkedProfile(string serial)
         {
             string temp = string.Empty;
             string tempSerial = serial.Replace(":", string.Empty);
@@ -1771,53 +1690,34 @@ namespace DS4Windows
         }
 
         public static bool Load() => m_Config.Load();
-        
-        public static void LoadProfile(int device, bool launchprogram, ControlService control,
-            bool xinputChange = true, bool postLoad = true)
+        public static void LoadProfile(int device, bool launchprogram, ControlService control, bool xinputChange = true, bool postLoad = true)
         {
             m_Config.LoadProfile(device, launchprogram, control, "", xinputChange, postLoad);
             tempprofilename[device] = string.Empty;
-            useTempProfile[device] = false;
+            UseTempProfile[device] = false;
             tempprofileDistance[device] = false;
         }
-
-        public static void LoadTempProfile(int device, string name, bool launchprogram,
-            ControlService control, bool xinputChange = true)
+        public static void LoadTempProfile(int device, string name, bool launchprogram, ControlService control, bool xinputChange = true)
         {
             m_Config.LoadProfile(device, launchprogram, control, appdatapath + @"\Profiles\" + name + ".xml");
             tempprofilename[device] = name;
-            useTempProfile[device] = true;
+            UseTempProfile[device] = true;
             tempprofileDistance[device] = name.ToLower().Contains("distance");
         }
 
-        public static void LoadBlankDevProfile(int device, bool launchprogram, ControlService control,
-            bool xinputChange = true, bool postLoad = true)
+        public static void LoadBlankDevProfile(int device, bool launchprogram, ControlService control, bool xinputChange = true, bool postLoad = true)
         {
             m_Config.LoadBlankProfile(device, launchprogram, control, "", xinputChange, postLoad);
             tempprofilename[device] = string.Empty;
-            useTempProfile[device] = false;
+            UseTempProfile[device] = false;
             tempprofileDistance[device] = false;
         }
 
-        public static bool Save()
-        {
-            return m_Config.Save();
-        }
+        public static bool Save() => m_Config.Save();
+        public static void SaveProfile(int device, string propath) => m_Config.SaveProfile(device, propath);
 
-        public static void SaveProfile(int device, string propath)
-        {
-            m_Config.SaveProfile(device, propath);
-        }
-
-        public static bool SaveLinkedProfiles()
-        {
-            return m_Config.SaveLinkedProfiles();
-        }
-
-        public static bool LoadLinkedProfiles()
-        {
-            return m_Config.LoadLinkedProfiles();
-        }
+        public static bool SaveLinkedProfiles() => m_Config.SaveLinkedProfiles();
+        public static bool LoadLinkedProfiles() => m_Config.LoadLinkedProfiles();
 
         public static bool SaveControllerConfigs(DS4Device device = null)
         {
@@ -1825,25 +1725,24 @@ namespace DS4Windows
                 return m_Config.SaveControllerConfigsForDevice(device);
 
             for (int idx = 0; idx < ControlService.DS4_CONTROLLER_COUNT; idx++)
-                if (Program.rootHub.DS4Controllers[idx] != null)
-                    m_Config.SaveControllerConfigsForDevice(Program.rootHub.DS4Controllers[idx]);
+                if (Program.RootHub.Controllers[idx].Device != null)
+                    m_Config.SaveControllerConfigsForDevice(Program.RootHub.Controllers[idx].Device);
 
             return true;
         }
-
         public static bool LoadControllerConfigs(DS4Device device = null)
         {
             if (device != null)
                 return m_Config.LoadControllerConfigsForDevice(device);
 
             for (int idx = 0; idx < ControlService.DS4_CONTROLLER_COUNT; idx++)
-                if (Program.rootHub.DS4Controllers[idx] != null)
-                    m_Config.LoadControllerConfigsForDevice(Program.rootHub.DS4Controllers[idx]);
+                if (Program.RootHub.Controllers[idx].Device != null)
+                    m_Config.LoadControllerConfigsForDevice(Program.RootHub.Controllers[idx].Device);
 
             return true;
         }
 
-        private static byte applyRatio(byte b1, byte b2, double r)
+        private static byte LerpByte(byte b1, byte b2, double r)
         {
             if (r > 100.0)
                 r = 100.0;
@@ -1854,19 +1753,22 @@ namespace DS4Windows
             return (byte)Math.Round((b1 * (1 - r)) + b2 * r, 0);
         }
 
-        public static DS4Color getTransitionedColor(ref DS4Color c1, ref DS4Color c2, double ratio)
+
+        public static DS4Color LerpDS4Color(DS4Color c1, DS4Color c2, double ratio)
+            => LerpDS4Color(ref c1, ref c2, ratio);
+        public static DS4Color LerpDS4Color(ref DS4Color c1, ref DS4Color c2, double ratio)
         {
             //Color cs = Color.FromArgb(c1.red, c1.green, c1.blue);
             DS4Color cs = new DS4Color
             {
-                red = applyRatio(c1.red, c2.red, ratio),
-                green = applyRatio(c1.green, c2.green, ratio),
-                blue = applyRatio(c1.blue, c2.blue, ratio)
+                Red = LerpByte(c1.Red, c2.Red, ratio),
+                Green = LerpByte(c1.Green, c2.Green, ratio),
+                Blue = LerpByte(c1.Blue, c2.Blue, ratio)
             };
             return cs;
         }
 
-        private static Color applyRatio(Color c1, Color c2, uint r)
+        public static Color LerpColor(Color c1, Color c2, uint r)
         {
             float ratio = r / 100f;
             float hue1 = c1.GetHue();
@@ -1887,11 +1789,11 @@ namespace DS4Windows
             return csR;
         }
 
-        public static Color HuetoRGB(float hue, float sat, float bri)
+        public static Color HuetoRGB(float hue, float saturation, float brightness)
         {
-            float C = (1-Math.Abs(2*bri)-1)* sat;
-            float X = C * (1 - Math.Abs((hue / 60) % 2 - 1));
-            float m = bri - C / 2;
+            float C = (1 - Math.Abs(2 * brightness) - 1) * saturation;
+            float X = C * (1 - Math.Abs(hue / 60 % 2 - 1));
+            float m = brightness - C / 2;
             float R, G, B;
             if (0 <= hue && hue < 60)
             {
@@ -1928,21 +1830,16 @@ namespace DS4Windows
         }
 
         public static double Clamp(double min, double value, double max)
-        {
-            return (value < min) ? min : (value > max) ? max : value;
-        }
-
-        private static int ClampInt(int min, int value, int max)
-        {
-            return (value < min) ? min : (value > max) ? max : value;
-        }
+            => (value < min) ? min : (value > max) ? max : value;
+        public static int Clamp(int min, int value, int max)
+            => (value < min) ? min : (value > max) ? max : value;
     }
 
     public class BackingStore
     {
         //public String m_Profile = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\DS4Tool" + "\\Profiles.xml";
-        public String m_Profile = Directory.GetParent(Assembly.GetExecutingAssembly().Location).FullName + "\\Profiles.xml";
-        public String m_Actions = Global.appdatapath + "\\Actions.xml";
+        public string m_Profile = Directory.GetParent(Assembly.GetExecutingAssembly().Location).FullName + "\\Profiles.xml";
+        public string m_Actions = Global.appdatapath + "\\Actions.xml";
         public string m_linkedProfiles = Global.appdatapath + "\\LinkedProfiles.xml";
         public string m_controllerConfigs = Global.appdatapath + "\\ControllerConfigs.xml";
 
@@ -1962,9 +1859,9 @@ namespace DS4Windows
         public Dictionary<string, string> linkedProfiles = new Dictionary<string, string>();
         // Cache properties instead of performing a string comparison every frame
         public bool[] distanceProfiles = new bool[5] { false, false, false, false, false };
-        public Byte[] rumble = new Byte[5] { 100, 100, 100, 100, 100 };
+        public byte[] rumble = new byte[5] { 100, 100, 100, 100, 100 };
         public int[] rumbleAutostopTime = new int[5] { 0, 0, 0, 0, 0 }; // Value in milliseconds (0=autustop timer disabled)
-        public Byte[] touchSensitivity = new Byte[5] { 100, 100, 100, 100, 100 };
+        public byte[] touchSensitivity = new byte[5] { 100, 100, 100, 100, 100 };
         public StickDeadZoneInfo[] lsModInfo = new StickDeadZoneInfo[5]
         {
             new StickDeadZoneInfo(), new StickDeadZoneInfo(),
@@ -2002,7 +1899,7 @@ namespace DS4Windows
         public double[] l2Sens = new double[5] { 1.0, 1.0, 1.0, 1.0, 1.0 }, r2Sens = new double[5] { 1.0, 1.0, 1.0, 1.0, 1.0 };
         public double[] LSSens = new double[5] { 1.0, 1.0, 1.0, 1.0, 1.0 }, RSSens = new double[5] { 1.0, 1.0, 1.0, 1.0, 1.0 };
         public double[] SXSens = new double[5] { 1.0, 1.0, 1.0, 1.0, 1.0 }, SZSens = new double[5] { 1.0, 1.0, 1.0, 1.0, 1.0 };
-        public Byte[] tapSensitivity = new Byte[5] { 0, 0, 0, 0, 0 };
+        public byte[] tapSensitivity = new byte[5] { 0, 0, 0, 0, 0 };
         public bool[] doubleTap = new bool[5] { false, false, false, false, false };
         public int[] scrollSensitivity = new int[5] { 0, 0, 0, 0, 0 };
         public int[] touchpadInvert = new int[5] { 0, 0, 0, 0, 0 };
@@ -2142,7 +2039,7 @@ namespace DS4Windows
         public string[] launchProgram = new string[5] { string.Empty, string.Empty, string.Empty, string.Empty, string.Empty };
         public bool[] dinputOnly = new bool[5] { false, false, false, false, false };
         public bool[] startTouchpadOff = new bool[5] { false, false, false, false, false };
-        public bool[] useTPforControls = new bool[5] { false, false, false, false, false };
+        public bool[] UseTouchPadForControls = new bool[5] { false, false, false, false, false };
         public bool[] useSAforMouse = new bool[5] { false, false, false, false, false };
         public GyroOutMode[] gyroOutMode = new GyroOutMode[5] { GyroOutMode.Controls, GyroOutMode.Controls,
             GyroOutMode.Controls, GyroOutMode.Controls, GyroOutMode.Controls };
@@ -2166,13 +2063,13 @@ namespace DS4Windows
             new int[1] { -1 }, new int[1] { -1 } };
         public int[] lsCurve = new int[5] { 0, 0, 0, 0, 0 };
         public int[] rsCurve = new int[5] { 0, 0, 0, 0, 0 };
-        public Boolean useExclusiveMode = false;
-        public Int32 formWidth = 782;
-        public Int32 formHeight = 550;
+        public bool useExclusiveMode = false;
+        public int formWidth = 782;
+        public int formHeight = 550;
         public int formLocationX = 0;
         public int formLocationY = 0;
-        public Boolean startMinimized = false;
-        public Boolean minToTaskbar = false;
+        public bool startMinimized = false;
+        public bool minToTaskbar = false;
         public DateTime lastChecked;
         public int CheckWhen = 1;
         public int notifications = 2;
@@ -2225,14 +2122,12 @@ namespace DS4Windows
         public bool[] trackballMode = new bool[5] { false, false, false, false, false };
         public double[] trackballFriction = new double[5] { 10.0, 10.0, 10.0, 10.0, 10.0 };
         // Used to hold the controller type desired in a profile
-        public OutContType[] outputDevType = new OutContType[5] { OutContType.X360,
-            OutContType.X360, OutContType.X360,
-            OutContType.X360, OutContType.X360 };
+        public OutControllerType[] outputDevType = new OutControllerType[5] { OutControllerType.X360,
+            OutControllerType.X360, OutControllerType.X360,
+            OutControllerType.X360, OutControllerType.X360 };
 
         // TRUE=AutoProfile reverts to default profile if current foreground process is unknown, FALSE=Leave existing profile active when a foreground proces is unknown (ie. no matching auto-profile rule)
         public bool autoProfileRevertDefaultProfile = true;
-
-        bool tempBool = false;
 
         public BackingStore()
         {
@@ -2309,11 +2204,7 @@ namespace DS4Windows
             return result;
         }
 
-        private string SaTriggerCondString(bool value)
-        {
-            string result = value ? "and" : "or";
-            return result;
-        }
+        private string SaTriggerCondString(bool value) => value ? "and" : "or";
 
         public void SetSaTriggerCond(int index, string text)
         {
@@ -2328,46 +2219,46 @@ namespace DS4Windows
         public void SetGyroMouseDZ(int index, int value, ControlService control)
         {
             gyroMouseDZ[index] = value;
-            if (index < 4 && control.touchPad[index] != null)
-                control.touchPad[index].CursorGyroDead = value;
+            if (index < 4 && control.Controllers[index].TouchPad != null)
+                control.Controllers[index].TouchPad.CursorGyroDead = value;
         }
 
         public void SetGyroMouseToggle(int index, bool value, ControlService control)
         {
             gyroMouseToggle[index] = value;
-            if (index < 4 && control.touchPad[index] != null)
-                control.touchPad[index].ToggleGyroMouse = value;
+            if (index < 4 && control.Controllers[index].TouchPad != null)
+                control.Controllers[index].TouchPad.ToggleGyroMouse = value;
         }
 
         public void SetGyroMouseStickToggle(int index, bool value, ControlService control)
         {
             gyroMouseStickToggle[index] = value;
-            if (index < 4 && control.touchPad[index] != null)
-                control.touchPad[index].ToggleGyroMouse = value;
+            if (index < 4 && control.Controllers[index].TouchPad != null)
+                control.Controllers[index].TouchPad.ToggleGyroMouse = value;
         }
 
-        private string OutContDeviceString(OutContType id)
+        private string OutContDeviceString(OutControllerType id)
         {
             string result = "X360";
             switch (id)
             {
-                case OutContType.None:
-                case OutContType.X360: result = "X360"; break;
-                case OutContType.DS4: result = "DS4"; break;
+                case OutControllerType.None:
+                case OutControllerType.X360: result = "X360"; break;
+                case OutControllerType.DS4: result = "DS4"; break;
                 default: break;
             }
 
             return result;
         }
 
-        private OutContType OutContDeviceId(string name)
+        private OutControllerType OutContDeviceId(string name)
         {
-            OutContType id = OutContType.X360;
+            OutControllerType id = OutControllerType.X360;
             switch (name)
             {
                 case "None":
-                case "X360": id = OutContType.X360; break;
-                case "DS4": id = OutContType.DS4; break;
+                case "X360": id = OutControllerType.X360; break;
+                case "DS4": id = OutControllerType.DS4; break;
                 default: break;
             }
 
@@ -2450,7 +2341,7 @@ namespace DS4Windows
                 XmlNode xmlTouchToggle = m_Xdoc.CreateNode(XmlNodeType.Element, "touchToggle", null); xmlTouchToggle.InnerText = enableTouchToggle[device].ToString(); Node.AppendChild(xmlTouchToggle);
                 XmlNode xmlIdleDisconnectTimeout = m_Xdoc.CreateNode(XmlNodeType.Element, "idleDisconnectTimeout", null); xmlIdleDisconnectTimeout.InnerText = idleDisconnectTimeout[device].ToString(); Node.AppendChild(xmlIdleDisconnectTimeout);
                 XmlNode xmlColor = m_Xdoc.CreateNode(XmlNodeType.Element, "Color", null);
-                xmlColor.InnerText = m_Leds[device].red.ToString() + "," + m_Leds[device].green.ToString() + "," + m_Leds[device].blue.ToString();
+                xmlColor.InnerText = m_Leds[device].Red.ToString() + "," + m_Leds[device].Green.ToString() + "," + m_Leds[device].Blue.ToString();
                 Node.AppendChild(xmlColor);
                 XmlNode xmlRumbleBoost = m_Xdoc.CreateNode(XmlNodeType.Element, "RumbleBoost", null); xmlRumbleBoost.InnerText = rumble[device].ToString(); Node.AppendChild(xmlRumbleBoost);
                 XmlNode xmlRumbleAutostopTime = m_Xdoc.CreateNode(XmlNodeType.Element, "RumbleAutostopTime", null); xmlRumbleAutostopTime.InnerText = rumbleAutostopTime[device].ToString(); Node.AppendChild(xmlRumbleAutostopTime);
@@ -2459,13 +2350,13 @@ namespace DS4Windows
                 XmlNode xmlFlashBatterAt = m_Xdoc.CreateNode(XmlNodeType.Element, "flashBatteryAt", null); xmlFlashBatterAt.InnerText = flashAt[device].ToString(); Node.AppendChild(xmlFlashBatterAt);
                 XmlNode xmlTouchSensitivity = m_Xdoc.CreateNode(XmlNodeType.Element, "touchSensitivity", null); xmlTouchSensitivity.InnerText = touchSensitivity[device].ToString(); Node.AppendChild(xmlTouchSensitivity);
                 XmlNode xmlLowColor = m_Xdoc.CreateNode(XmlNodeType.Element, "LowColor", null);
-                xmlLowColor.InnerText = m_LowLeds[device].red.ToString() + "," + m_LowLeds[device].green.ToString() + "," + m_LowLeds[device].blue.ToString();
+                xmlLowColor.InnerText = m_LowLeds[device].Red.ToString() + "," + m_LowLeds[device].Green.ToString() + "," + m_LowLeds[device].Blue.ToString();
                 Node.AppendChild(xmlLowColor);
                 XmlNode xmlChargingColor = m_Xdoc.CreateNode(XmlNodeType.Element, "ChargingColor", null);
-                xmlChargingColor.InnerText = m_ChargingLeds[device].red.ToString() + "," + m_ChargingLeds[device].green.ToString() + "," + m_ChargingLeds[device].blue.ToString();
+                xmlChargingColor.InnerText = m_ChargingLeds[device].Red.ToString() + "," + m_ChargingLeds[device].Green.ToString() + "," + m_ChargingLeds[device].Blue.ToString();
                 Node.AppendChild(xmlChargingColor);
                 XmlNode xmlFlashColor = m_Xdoc.CreateNode(XmlNodeType.Element, "FlashColor", null);
-                xmlFlashColor.InnerText = m_FlashLeds[device].red.ToString() + "," + m_FlashLeds[device].green.ToString() + "," + m_FlashLeds[device].blue.ToString();
+                xmlFlashColor.InnerText = m_FlashLeds[device].Red.ToString() + "," + m_FlashLeds[device].Green.ToString() + "," + m_FlashLeds[device].Blue.ToString();
                 Node.AppendChild(xmlFlashColor);
                 XmlNode xmlTouchpadJitterCompensation = m_Xdoc.CreateNode(XmlNodeType.Element, "touchpadJitterCompensation", null); xmlTouchpadJitterCompensation.InnerText = touchpadJitterCompensation[device].ToString(); Node.AppendChild(xmlTouchpadJitterCompensation);
                 XmlNode xmlLowerRCOn = m_Xdoc.CreateNode(XmlNodeType.Element, "lowerRCOn", null); xmlLowerRCOn.InnerText = lowerRCOn[device].ToString(); Node.AppendChild(xmlLowerRCOn);
@@ -2510,7 +2401,7 @@ namespace DS4Windows
                 XmlNode xmlLaunchProgram = m_Xdoc.CreateNode(XmlNodeType.Element, "LaunchProgram", null); xmlLaunchProgram.InnerText = launchProgram[device].ToString(); Node.AppendChild(xmlLaunchProgram);
                 XmlNode xmlDinput = m_Xdoc.CreateNode(XmlNodeType.Element, "DinputOnly", null); xmlDinput.InnerText = dinputOnly[device].ToString(); Node.AppendChild(xmlDinput);
                 XmlNode xmlStartTouchpadOff = m_Xdoc.CreateNode(XmlNodeType.Element, "StartTouchpadOff", null); xmlStartTouchpadOff.InnerText = startTouchpadOff[device].ToString(); Node.AppendChild(xmlStartTouchpadOff);
-                XmlNode xmlUseTPforControls = m_Xdoc.CreateNode(XmlNodeType.Element, "UseTPforControls", null); xmlUseTPforControls.InnerText = useTPforControls[device].ToString(); Node.AppendChild(xmlUseTPforControls);
+                XmlNode xmlUseTPforControls = m_Xdoc.CreateNode(XmlNodeType.Element, "UseTPforControls", null); xmlUseTPforControls.InnerText = UseTouchPadForControls[device].ToString(); Node.AppendChild(xmlUseTPforControls);
                 XmlNode xmlUseSAforMouse = m_Xdoc.CreateNode(XmlNodeType.Element, "UseSAforMouse", null); xmlUseSAforMouse.InnerText = useSAforMouse[device].ToString(); Node.AppendChild(xmlUseSAforMouse);
                 XmlNode xmlSATriggers = m_Xdoc.CreateNode(XmlNodeType.Element, "SATriggers", null); xmlSATriggers.InnerText = sATriggers[device].ToString(); Node.AppendChild(xmlSATriggers);
                 XmlNode xmlSATriggerCond = m_Xdoc.CreateNode(XmlNodeType.Element, "SATriggerCond", null); xmlSATriggerCond.InnerText = SaTriggerCondString(sATriggerCond[device]); Node.AppendChild(xmlSATriggerCond);
@@ -3014,20 +2905,25 @@ namespace DS4Windows
             return "Unbound";
         }
 
-        public bool LoadProfile(int device, bool launchprogram, ControlService control,
-            string propath = "", bool xinputChange = true, bool postLoad = true)
+        public bool LoadProfile(
+            int device,
+            bool launchprogram, 
+            ControlService control,
+            string propath = "",
+            bool xinputChange = true, 
+            bool postLoad = true)
         {
             bool Loaded = true;
             Dictionary<DS4Controls, DS4KeyType> customMapKeyTypes = new Dictionary<DS4Controls, DS4KeyType>();
-            Dictionary<DS4Controls, UInt16> customMapKeys = new Dictionary<DS4Controls, UInt16>();
+            Dictionary<DS4Controls, ushort> customMapKeys = new Dictionary<DS4Controls, ushort>();
             Dictionary<DS4Controls, X360Controls> customMapButtons = new Dictionary<DS4Controls, X360Controls>();
-            Dictionary<DS4Controls, String> customMapMacros = new Dictionary<DS4Controls, String>();
-            Dictionary<DS4Controls, String> customMapExtras = new Dictionary<DS4Controls, String>();
+            Dictionary<DS4Controls, string> customMapMacros = new Dictionary<DS4Controls, string>();
+            Dictionary<DS4Controls, string> customMapExtras = new Dictionary<DS4Controls, string>();
             Dictionary<DS4Controls, DS4KeyType> shiftCustomMapKeyTypes = new Dictionary<DS4Controls, DS4KeyType>();
-            Dictionary<DS4Controls, UInt16> shiftCustomMapKeys = new Dictionary<DS4Controls, UInt16>();
+            Dictionary<DS4Controls, ushort> shiftCustomMapKeys = new Dictionary<DS4Controls, ushort>();
             Dictionary<DS4Controls, X360Controls> shiftCustomMapButtons = new Dictionary<DS4Controls, X360Controls>();
-            Dictionary<DS4Controls, String> shiftCustomMapMacros = new Dictionary<DS4Controls, String>();
-            Dictionary<DS4Controls, String> shiftCustomMapExtras = new Dictionary<DS4Controls, String>();
+            Dictionary<DS4Controls, string> shiftCustomMapMacros = new Dictionary<DS4Controls, string>();
+            Dictionary<DS4Controls, string> shiftCustomMapExtras = new Dictionary<DS4Controls, string>();
             string rootname = "DS4Windows";
             bool missingSetting = false;
             string profilepath;
@@ -3052,22 +2948,22 @@ namespace DS4Windows
 
                 if (device < 4)
                 {
-                    DS4LightBar.forcelight[device] = false;
-                    DS4LightBar.forcedFlash[device] = 0;
+                    DS4LightBar.Forcelight[device] = false;
+                    DS4LightBar.ForcedFlash[device] = 0;
                 }
 
-                OutContType oldContType = Global.activeOutDevType[device];
+                OutControllerType oldContType = Global.ActiveOutDevType[device];
 
                 // Make sure to reset currently set profile values before parsing
                 ResetProfile(device);
 
-                try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/flushHIDQueue"); Boolean.TryParse(Item.InnerText, out flushHIDQueue[device]); }
+                try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/flushHIDQueue"); bool.TryParse(Item.InnerText, out flushHIDQueue[device]); }
                 catch { missingSetting = true; }//rootname = }
 
-                try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/touchToggle"); Boolean.TryParse(Item.InnerText, out enableTouchToggle[device]); }
+                try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/touchToggle"); bool.TryParse(Item.InnerText, out enableTouchToggle[device]); }
                 catch { missingSetting = true; }
 
-                try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/idleDisconnectTimeout"); Int32.TryParse(Item.InnerText, out idleDisconnectTimeout[device]); }
+                try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/idleDisconnectTimeout"); int.TryParse(Item.InnerText, out idleDisconnectTimeout[device]); }
                 catch { missingSetting = true; }
                 //New method for saving color
                 try
@@ -3079,40 +2975,40 @@ namespace DS4Windows
                     else
                         colors = new string[0];
 
-                    m_Leds[device].red = byte.Parse(colors[0]);
-                    m_Leds[device].green = byte.Parse(colors[1]);
-                    m_Leds[device].blue = byte.Parse(colors[2]);
+                    m_Leds[device].Red = byte.Parse(colors[0]);
+                    m_Leds[device].Green = byte.Parse(colors[1]);
+                    m_Leds[device].Blue = byte.Parse(colors[2]);
                 }
                 catch { missingSetting = true; }
 
                 if (m_Xdoc.SelectSingleNode("/" + rootname + "/Color") == null)
                 {
                     //Old method of color saving
-                    try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/Red"); Byte.TryParse(Item.InnerText, out m_Leds[device].red); }
+                    try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/Red"); byte.TryParse(Item.InnerText, out m_Leds[device].Red); }
                     catch { missingSetting = true; }
-                    try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/Green"); Byte.TryParse(Item.InnerText, out m_Leds[device].green); }
+                    try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/Green"); byte.TryParse(Item.InnerText, out m_Leds[device].Green); }
                     catch { missingSetting = true; }
 
-                    try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/Blue"); Byte.TryParse(Item.InnerText, out m_Leds[device].blue); }
+                    try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/Blue"); byte.TryParse(Item.InnerText, out m_Leds[device].Blue); }
                     catch { missingSetting = true; }
                 }
 
-                try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/RumbleBoost"); Byte.TryParse(Item.InnerText, out rumble[device]); }
+                try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/RumbleBoost"); byte.TryParse(Item.InnerText, out rumble[device]); }
                 catch { missingSetting = true; }
 
-                try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/RumbleAutostopTime"); Int32.TryParse(Item.InnerText, out rumbleAutostopTime[device]); }
+                try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/RumbleAutostopTime"); int.TryParse(Item.InnerText, out rumbleAutostopTime[device]); }
                 catch { missingSetting = true; }
 
-                try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/ledAsBatteryIndicator"); Boolean.TryParse(Item.InnerText, out ledAsBattery[device]); }
+                try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/ledAsBatteryIndicator"); bool.TryParse(Item.InnerText, out ledAsBattery[device]); }
                 catch { missingSetting = true; }
 
-                try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/FlashType"); Byte.TryParse(Item.InnerText, out flashType[device]); }
+                try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/FlashType"); byte.TryParse(Item.InnerText, out flashType[device]); }
                 catch { missingSetting = true; }
 
-                try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/flashBatteryAt"); Int32.TryParse(Item.InnerText, out flashAt[device]); }
+                try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/flashBatteryAt"); int.TryParse(Item.InnerText, out flashAt[device]); }
                 catch { missingSetting = true; }
 
-                try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/touchSensitivity"); Byte.TryParse(Item.InnerText, out touchSensitivity[device]); }
+                try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/touchSensitivity"); byte.TryParse(Item.InnerText, out touchSensitivity[device]); }
                 catch { missingSetting = true; }
 
                 //New method for saving color
@@ -3125,20 +3021,20 @@ namespace DS4Windows
                     else
                         colors = new string[0];
 
-                    m_LowLeds[device].red = byte.Parse(colors[0]);
-                    m_LowLeds[device].green = byte.Parse(colors[1]);
-                    m_LowLeds[device].blue = byte.Parse(colors[2]);
+                    m_LowLeds[device].Red = byte.Parse(colors[0]);
+                    m_LowLeds[device].Green = byte.Parse(colors[1]);
+                    m_LowLeds[device].Blue = byte.Parse(colors[2]);
                 }
                 catch { missingSetting = true; }
 
                 if (m_Xdoc.SelectSingleNode("/" + rootname + "/LowColor") == null)
                 {
                     //Old method of color saving
-                    try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/LowRed"); byte.TryParse(Item.InnerText, out m_LowLeds[device].red); }
+                    try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/LowRed"); byte.TryParse(Item.InnerText, out m_LowLeds[device].Red); }
                     catch { missingSetting = true; }
-                    try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/LowGreen"); byte.TryParse(Item.InnerText, out m_LowLeds[device].green); }
+                    try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/LowGreen"); byte.TryParse(Item.InnerText, out m_LowLeds[device].Green); }
                     catch { missingSetting = true; }
-                    try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/LowBlue"); byte.TryParse(Item.InnerText, out m_LowLeds[device].blue); }
+                    try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/LowBlue"); byte.TryParse(Item.InnerText, out m_LowLeds[device].Blue); }
                     catch { missingSetting = true; }
                 }
 
@@ -3152,19 +3048,19 @@ namespace DS4Windows
                     else
                         colors = new string[0];
 
-                    m_ChargingLeds[device].red = byte.Parse(colors[0]);
-                    m_ChargingLeds[device].green = byte.Parse(colors[1]);
-                    m_ChargingLeds[device].blue = byte.Parse(colors[2]);
+                    m_ChargingLeds[device].Red = byte.Parse(colors[0]);
+                    m_ChargingLeds[device].Green = byte.Parse(colors[1]);
+                    m_ChargingLeds[device].Blue = byte.Parse(colors[2]);
                 }
                 catch { missingSetting = true; }
 
                 if (m_Xdoc.SelectSingleNode("/" + rootname + "/ChargingColor") == null)
                 {
-                    try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/ChargingRed"); Byte.TryParse(Item.InnerText, out m_ChargingLeds[device].red); }
+                    try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/ChargingRed"); byte.TryParse(Item.InnerText, out m_ChargingLeds[device].Red); }
                     catch { missingSetting = true; }
-                    try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/ChargingGreen"); Byte.TryParse(Item.InnerText, out m_ChargingLeds[device].green); }
+                    try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/ChargingGreen"); byte.TryParse(Item.InnerText, out m_ChargingLeds[device].Green); }
                     catch { missingSetting = true; }
-                    try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/ChargingBlue"); Byte.TryParse(Item.InnerText, out m_ChargingLeds[device].blue); }
+                    try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/ChargingBlue"); byte.TryParse(Item.InnerText, out m_ChargingLeds[device].Blue); }
                     catch { missingSetting = true; }
                 }
 
@@ -3176,9 +3072,9 @@ namespace DS4Windows
                         colors = Item.InnerText.Split(',');
                     else
                         colors = new string[0];
-                    m_FlashLeds[device].red = byte.Parse(colors[0]);
-                    m_FlashLeds[device].green = byte.Parse(colors[1]);
-                    m_FlashLeds[device].blue = byte.Parse(colors[2]);
+                    m_FlashLeds[device].Red = byte.Parse(colors[0]);
+                    m_FlashLeds[device].Green = byte.Parse(colors[1]);
+                    m_FlashLeds[device].Blue = byte.Parse(colors[2]);
                 }
                 catch { missingSetting = true; }
 
@@ -3344,7 +3240,7 @@ namespace DS4Windows
                 if (launchprogram == true && launchProgram[device] != string.Empty)
                 {
                     string programPath = launchProgram[device];
-                    System.Diagnostics.Process[] localAll = System.Diagnostics.Process.GetProcesses();
+                    System.Diagnostics.Process[] localAll = Process.GetProcesses();
                     bool procFound = false;
                     for (int procInd = 0, procsLen = localAll.Length; !procFound && procInd < procsLen; procInd++)
                     {
@@ -3385,18 +3281,18 @@ namespace DS4Windows
                 }
                 catch { dinputOnly[device] = false; missingSetting = true; }
 
-                bool oldUseDInputOnly = Global.useDInputOnly[device];
+                bool oldUseDInputOnly = Global.UseDInputOnly[device];
 
                 try
                 {
                     Item = m_Xdoc.SelectSingleNode("/" + rootname + "/StartTouchpadOff");
                     bool.TryParse(Item.InnerText, out startTouchpadOff[device]);
-                    if (startTouchpadOff[device] == true) control.StartTPOff(device);
+                    if (startTouchpadOff[device] == true) control.StartTouchPadOff(device);
                 }
                 catch { startTouchpadOff[device] = false; missingSetting = true; }
 
-                try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/UseTPforControls"); bool.TryParse(Item.InnerText, out useTPforControls[device]); }
-                catch { useTPforControls[device] = false; missingSetting = true; }
+                try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/UseTPforControls"); bool.TryParse(Item.InnerText, out UseTouchPadForControls[device]); }
+                catch { UseTouchPadForControls[device] = false; missingSetting = true; }
 
                 try
                 {
@@ -3412,14 +3308,14 @@ namespace DS4Windows
                 try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/SATriggerCond"); sATriggerCond[device] = SaTriggerCondValue(Item.InnerText); }
                 catch { sATriggerCond[device] = true; missingSetting = true; }
 
-                try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/SASteeringWheelEmulationAxis"); SASteeringWheelEmulationAxisType.TryParse(Item.InnerText, out sASteeringWheelEmulationAxis[device]); }
+                try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/SASteeringWheelEmulationAxis"); Enum.TryParse(Item.InnerText, out sASteeringWheelEmulationAxis[device]); }
                 catch { sASteeringWheelEmulationAxis[device] = SASteeringWheelEmulationAxisType.None; missingSetting = true; }
 
                 try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/SASteeringWheelEmulationRange"); int.TryParse(Item.InnerText, out sASteeringWheelEmulationRange[device]); }
                 catch { sASteeringWheelEmulationRange[device] = 360; missingSetting = true; }
 
 
-                try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/GyroOutputMode"); GyroOutMode.TryParse(Item.InnerText, out gyroOutMode[device]); }
+                try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/GyroOutputMode"); Enum.TryParse(Item.InnerText, out gyroOutMode[device]); }
                 catch { PortOldGyroSettings(device); missingSetting = true; }
 
                 try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/GyroMouseStickTriggers"); sAMouseStickTriggers[device] = Item.InnerText; }
@@ -3593,7 +3489,7 @@ namespace DS4Windows
                 catch { trackballFriction[device] = 10.0; missingSetting = true; }
 
                 try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/OutputContDevice"); outputDevType[device] = OutContDeviceId(Item.InnerText); }
-                catch { outputDevType[device] = OutContType.X360; missingSetting = true; }
+                catch { outputDevType[device] = OutControllerType.X360; missingSetting = true; }
 
                 // Only change xinput devices under certain conditions. Avoid
                 // performing this upon program startup before loading devices.
@@ -3842,17 +3738,16 @@ namespace DS4Windows
 
             if (device < 4)
             {
-                Program.rootHub.touchPad[device]?.ResetToggleGyroM();
+                Program.RootHub.Controllers[device].TouchPad?.ResetToggleGyroM();
                 GyroOutMode currentGyro = gyroOutMode[device];
-                if (currentGyro == GyroOutMode.Mouse)
+                switch (currentGyro)
                 {
-                    control.touchPad[device].ToggleGyroMouse =
-                        gyroMouseToggle[device];
-                }
-                else if (currentGyro == GyroOutMode.MouseJoystick)
-                {
-                    control.touchPad[device].ToggleGyroMouse =
-                        gyroMouseStickToggle[device];
+                    case GyroOutMode.Mouse:
+                        control.Controllers[device].TouchPad.ToggleGyroMouse = gyroMouseToggle[device];
+                        break;
+                    case GyroOutMode.MouseJoystick:
+                        control.Controllers[device].TouchPad.ToggleGyroMouse = gyroMouseStickToggle[device];
+                        break;
                 }
             }
 
@@ -3879,26 +3774,26 @@ namespace DS4Windows
 
                     m_Xdoc.Load(m_Profile);
 
-                    try { Item = m_Xdoc.SelectSingleNode("/Profile/useExclusiveMode"); Boolean.TryParse(Item.InnerText, out useExclusiveMode); }
+                    try { Item = m_Xdoc.SelectSingleNode("/Profile/useExclusiveMode"); bool.TryParse(Item.InnerText, out useExclusiveMode); }
                     catch { missingSetting = true; }
-                    try { Item = m_Xdoc.SelectSingleNode("/Profile/startMinimized"); Boolean.TryParse(Item.InnerText, out startMinimized); }
+                    try { Item = m_Xdoc.SelectSingleNode("/Profile/startMinimized"); bool.TryParse(Item.InnerText, out startMinimized); }
                     catch { missingSetting = true; }
-                    try { Item = m_Xdoc.SelectSingleNode("/Profile/minimizeToTaskbar"); Boolean.TryParse(Item.InnerText, out minToTaskbar); }
+                    try { Item = m_Xdoc.SelectSingleNode("/Profile/minimizeToTaskbar"); bool.TryParse(Item.InnerText, out minToTaskbar); }
                     catch { missingSetting = true; }
-                    try { Item = m_Xdoc.SelectSingleNode("/Profile/formWidth"); Int32.TryParse(Item.InnerText, out formWidth); }
+                    try { Item = m_Xdoc.SelectSingleNode("/Profile/formWidth"); int.TryParse(Item.InnerText, out formWidth); }
                     catch { missingSetting = true; }
-                    try { Item = m_Xdoc.SelectSingleNode("/Profile/formHeight"); Int32.TryParse(Item.InnerText, out formHeight); }
+                    try { Item = m_Xdoc.SelectSingleNode("/Profile/formHeight"); int.TryParse(Item.InnerText, out formHeight); }
                     catch { missingSetting = true; }
                     try {
                         int temp = 0;
-                        Item = m_Xdoc.SelectSingleNode("/Profile/formLocationX"); Int32.TryParse(Item.InnerText, out temp);
+                        Item = m_Xdoc.SelectSingleNode("/Profile/formLocationX"); int.TryParse(Item.InnerText, out temp);
                         formLocationX = Math.Max(temp, 0);
                     }
                     catch { missingSetting = true; }
 
                     try {
                         int temp = 0;
-                        Item = m_Xdoc.SelectSingleNode("/Profile/formLocationY"); Int32.TryParse(Item.InnerText, out temp);
+                        Item = m_Xdoc.SelectSingleNode("/Profile/formLocationY"); int.TryParse(Item.InnerText, out temp);
                         formLocationY = Math.Max(temp, 0);
                     }
                     catch { missingSetting = true; }
@@ -3946,48 +3841,48 @@ namespace DS4Windows
 
                     try { Item = m_Xdoc.SelectSingleNode("/Profile/LastChecked"); DateTime.TryParse(Item.InnerText, out lastChecked); }
                     catch { missingSetting = true; }
-                    try { Item = m_Xdoc.SelectSingleNode("/Profile/CheckWhen"); Int32.TryParse(Item.InnerText, out CheckWhen); }
+                    try { Item = m_Xdoc.SelectSingleNode("/Profile/CheckWhen"); int.TryParse(Item.InnerText, out CheckWhen); }
                     catch { missingSetting = true; }
 
                     try
                     {
                         Item = m_Xdoc.SelectSingleNode("/Profile/Notifications");
                         if (!int.TryParse(Item.InnerText, out notifications))
-                            notifications = (Boolean.Parse(Item.InnerText) ? 2 : 0);
+                            notifications = (bool.Parse(Item.InnerText) ? 2 : 0);
                     }
                     catch { missingSetting = true; }
 
-                    try { Item = m_Xdoc.SelectSingleNode("/Profile/DisconnectBTAtStop"); Boolean.TryParse(Item.InnerText, out disconnectBTAtStop); }
+                    try { Item = m_Xdoc.SelectSingleNode("/Profile/DisconnectBTAtStop"); bool.TryParse(Item.InnerText, out disconnectBTAtStop); }
                     catch { missingSetting = true; }
-                    try { Item = m_Xdoc.SelectSingleNode("/Profile/SwipeProfiles"); Boolean.TryParse(Item.InnerText, out swipeProfiles); }
+                    try { Item = m_Xdoc.SelectSingleNode("/Profile/SwipeProfiles"); bool.TryParse(Item.InnerText, out swipeProfiles); }
                     catch { missingSetting = true; }
                     //try { Item = m_Xdoc.SelectSingleNode("/Profile/UseDS4ForMapping"); Boolean.TryParse(Item.InnerText, out ds4Mapping); }
                     //catch { missingSetting = true; }
-                    try { Item = m_Xdoc.SelectSingleNode("/Profile/QuickCharge"); Boolean.TryParse(Item.InnerText, out quickCharge); }
+                    try { Item = m_Xdoc.SelectSingleNode("/Profile/QuickCharge"); bool.TryParse(Item.InnerText, out quickCharge); }
                     catch { missingSetting = true; }
-                    try { Item = m_Xdoc.SelectSingleNode("/Profile/CloseMinimizes"); Boolean.TryParse(Item.InnerText, out closeMini); }
+                    try { Item = m_Xdoc.SelectSingleNode("/Profile/CloseMinimizes"); bool.TryParse(Item.InnerText, out closeMini); }
                     catch { missingSetting = true; }
                     try { Item = m_Xdoc.SelectSingleNode("/Profile/UseLang"); useLang = Item.InnerText; }
                     catch { missingSetting = true; }
-                    try { Item = m_Xdoc.SelectSingleNode("/Profile/DownloadLang"); Boolean.TryParse(Item.InnerText, out downloadLang); }
+                    try { Item = m_Xdoc.SelectSingleNode("/Profile/DownloadLang"); bool.TryParse(Item.InnerText, out downloadLang); }
                     catch { missingSetting = true; }
-                    try { Item = m_Xdoc.SelectSingleNode("/Profile/FlashWhenLate"); Boolean.TryParse(Item.InnerText, out flashWhenLate); }
+                    try { Item = m_Xdoc.SelectSingleNode("/Profile/FlashWhenLate"); bool.TryParse(Item.InnerText, out flashWhenLate); }
                     catch { missingSetting = true; }
                     try { Item = m_Xdoc.SelectSingleNode("/Profile/FlashWhenLateAt"); int.TryParse(Item.InnerText, out flashWhenLateAt); }
                     catch { missingSetting = true; }
-                    try { Item = m_Xdoc.SelectSingleNode("/Profile/WhiteIcon"); Boolean.TryParse(Item.InnerText, out useWhiteIcon); }
+                    try { Item = m_Xdoc.SelectSingleNode("/Profile/WhiteIcon"); bool.TryParse(Item.InnerText, out useWhiteIcon); }
                     catch { missingSetting = true; }
-                    try { Item = m_Xdoc.SelectSingleNode("/Profile/UseUDPServer"); Boolean.TryParse(Item.InnerText, out useUDPServ); }
+                    try { Item = m_Xdoc.SelectSingleNode("/Profile/UseUDPServer"); bool.TryParse(Item.InnerText, out useUDPServ); }
                     catch { missingSetting = true; }
                     try { Item = m_Xdoc.SelectSingleNode("/Profile/UDPServerPort"); int temp; int.TryParse(Item.InnerText, out temp); udpServPort = Math.Min(Math.Max(temp, 1024), 65535); }
                     catch { missingSetting = true; }
                     try { Item = m_Xdoc.SelectSingleNode("/Profile/UDPServerListenAddress"); udpServListenAddress = Item.InnerText; }
                     catch { missingSetting = true; }
-                    try { Item = m_Xdoc.SelectSingleNode("/Profile/UseCustomSteamFolder"); Boolean.TryParse(Item.InnerText, out useCustomSteamFolder); }
+                    try { Item = m_Xdoc.SelectSingleNode("/Profile/UseCustomSteamFolder"); bool.TryParse(Item.InnerText, out useCustomSteamFolder); }
                     catch { missingSetting = true; }
                     try { Item = m_Xdoc.SelectSingleNode("/Profile/CustomSteamFolder"); customSteamFolder = Item.InnerText; }
                     catch { missingSetting = true; }
-                    try { Item = m_Xdoc.SelectSingleNode("/Profile/AutoProfileRevertDefaultProfile"); Boolean.TryParse(Item.InnerText, out autoProfileRevertDefaultProfile); }
+                    try { Item = m_Xdoc.SelectSingleNode("/Profile/AutoProfileRevertDefaultProfile"); bool.TryParse(Item.InnerText, out autoProfileRevertDefaultProfile); }
                     catch { missingSetting = true; }
 
                     for (int i = 0; i < 4; i++)
@@ -4019,10 +3914,10 @@ namespace DS4Windows
 
             m_Xdoc.RemoveAll();
 
-            Node = m_Xdoc.CreateXmlDeclaration("1.0", "utf-8", String.Empty);
+            Node = m_Xdoc.CreateXmlDeclaration("1.0", "utf-8", string.Empty);
             m_Xdoc.AppendChild(Node);
 
-            Node = m_Xdoc.CreateComment(String.Format(" Profile Configuration Data. {0} ", DateTime.Now));
+            Node = m_Xdoc.CreateComment(string.Format(" Profile Configuration Data. {0} ", DateTime.Now));
             m_Xdoc.AppendChild(Node);
 
             Node = m_Xdoc.CreateWhitespace("\r\n");
@@ -4038,10 +3933,10 @@ namespace DS4Windows
             XmlNode xmlFormLocationX = m_Xdoc.CreateNode(XmlNodeType.Element, "formLocationX", null); xmlFormLocationX.InnerText = formLocationX.ToString(); Node.AppendChild(xmlFormLocationX);
             XmlNode xmlFormLocationY = m_Xdoc.CreateNode(XmlNodeType.Element, "formLocationY", null); xmlFormLocationY.InnerText = formLocationY.ToString(); Node.AppendChild(xmlFormLocationY);
 
-            XmlNode xmlController1 = m_Xdoc.CreateNode(XmlNodeType.Element, "Controller1", null); xmlController1.InnerText = !Global.linkedProfileCheck[0] ? profilePath[0] : olderProfilePath[0]; Node.AppendChild(xmlController1);
-            XmlNode xmlController2 = m_Xdoc.CreateNode(XmlNodeType.Element, "Controller2", null); xmlController2.InnerText = !Global.linkedProfileCheck[1] ? profilePath[1] : olderProfilePath[1]; Node.AppendChild(xmlController2);
-            XmlNode xmlController3 = m_Xdoc.CreateNode(XmlNodeType.Element, "Controller3", null); xmlController3.InnerText = !Global.linkedProfileCheck[2] ? profilePath[2] : olderProfilePath[2]; Node.AppendChild(xmlController3);
-            XmlNode xmlController4 = m_Xdoc.CreateNode(XmlNodeType.Element, "Controller4", null); xmlController4.InnerText = !Global.linkedProfileCheck[3] ? profilePath[3] : olderProfilePath[3]; Node.AppendChild(xmlController4);
+            XmlNode xmlController1 = m_Xdoc.CreateNode(XmlNodeType.Element, "Controller1", null); xmlController1.InnerText = !Global.LinkedProfileCheck[0] ? profilePath[0] : olderProfilePath[0]; Node.AppendChild(xmlController1);
+            XmlNode xmlController2 = m_Xdoc.CreateNode(XmlNodeType.Element, "Controller2", null); xmlController2.InnerText = !Global.LinkedProfileCheck[1] ? profilePath[1] : olderProfilePath[1]; Node.AppendChild(xmlController2);
+            XmlNode xmlController3 = m_Xdoc.CreateNode(XmlNodeType.Element, "Controller3", null); xmlController3.InnerText = !Global.LinkedProfileCheck[2] ? profilePath[2] : olderProfilePath[2]; Node.AppendChild(xmlController3);
+            XmlNode xmlController4 = m_Xdoc.CreateNode(XmlNodeType.Element, "Controller4", null); xmlController4.InnerText = !Global.LinkedProfileCheck[3] ? profilePath[3] : olderProfilePath[3]; Node.AppendChild(xmlController4);
 
             XmlNode xmlLastChecked = m_Xdoc.CreateNode(XmlNodeType.Element, "LastChecked", null); xmlLastChecked.InnerText = lastChecked.ToString(); Node.AppendChild(xmlLastChecked);
             XmlNode xmlCheckWhen = m_Xdoc.CreateNode(XmlNodeType.Element, "CheckWhen", null); xmlCheckWhen.InnerText = CheckWhen.ToString(); Node.AppendChild(xmlCheckWhen);
@@ -4066,7 +3961,7 @@ namespace DS4Windows
             for (int i = 0; i < 4; i++)
             {
                 XmlNode xmlCustomLed = m_Xdoc.CreateNode(XmlNodeType.Element, "CustomLed" + (1 + i), null);
-                xmlCustomLed.InnerText = useCustomLeds[i] + ":" + m_CustomLeds[i].red + "," + m_CustomLeds[i].green + "," + m_CustomLeds[i].blue;
+                xmlCustomLed.InnerText = useCustomLeds[i] + ":" + m_CustomLeds[i].Red + "," + m_CustomLeds[i].Green + "," + m_CustomLeds[i].Blue;
                 Node.AppendChild(xmlCustomLed);
             }
 
@@ -4082,10 +3977,10 @@ namespace DS4Windows
             XmlDocument m_Xdoc = new XmlDocument();
             XmlNode Node;
 
-            Node = m_Xdoc.CreateXmlDeclaration("1.0", "utf-8", String.Empty);
+            Node = m_Xdoc.CreateXmlDeclaration("1.0", "utf-8", string.Empty);
             m_Xdoc.AppendChild(Node);
 
-            Node = m_Xdoc.CreateComment(String.Format(" Special Actions Configuration Data. {0} ", DateTime.Now));
+            Node = m_Xdoc.CreateComment(string.Format(" Special Actions Configuration Data. {0} ", DateTime.Now));
             m_Xdoc.AppendChild(Node);
 
             Node = m_Xdoc.CreateWhitespace("\r\n");
@@ -4104,7 +3999,7 @@ namespace DS4Windows
             m_Xdoc.Load(m_Actions);
             XmlNode Node;
 
-            Node = m_Xdoc.CreateComment(String.Format(" Special Actions Configuration Data. {0} ", DateTime.Now));
+            Node = m_Xdoc.CreateComment(string.Format(" Special Actions Configuration Data. {0} ", DateTime.Now));
             foreach (XmlNode node in m_Xdoc.SelectNodes("//comment()"))
                 node.ParentNode.ReplaceChild(Node, node);
 
@@ -4427,16 +4322,16 @@ namespace DS4Windows
                 XmlDocument xmlDoc = new XmlDocument();
                 xmlDoc.Load(m_controllerConfigs);
 
-                XmlNode node = xmlDoc.SelectSingleNode("/Controllers/Controller[@Mac=\"" + device.getMacAddress() + "\"]");
+                XmlNode node = xmlDoc.SelectSingleNode("/Controllers/Controller[@Mac=\"" + device.MacAddress + "\"]");
                 if (node != null)
                 {
-                    Int32 intValue;
-                    if (Int32.TryParse(node["wheelCenterPoint"].InnerText.Split(',')[0], out intValue)) device.wheelCenterPoint.X = intValue;
-                    if (Int32.TryParse(node["wheelCenterPoint"].InnerText.Split(',')[1], out intValue)) device.wheelCenterPoint.Y = intValue;
-                    if (Int32.TryParse(node["wheel90DegPointLeft"].InnerText.Split(',')[0], out intValue)) device.wheel90DegPointLeft.X = intValue;
-                    if (Int32.TryParse(node["wheel90DegPointLeft"].InnerText.Split(',')[1], out intValue)) device.wheel90DegPointLeft.Y = intValue;
-                    if (Int32.TryParse(node["wheel90DegPointRight"].InnerText.Split(',')[0], out intValue)) device.wheel90DegPointRight.X = intValue;
-                    if (Int32.TryParse(node["wheel90DegPointRight"].InnerText.Split(',')[1], out intValue)) device.wheel90DegPointRight.Y = intValue;
+                    int intValue;
+                    if (int.TryParse(node["wheelCenterPoint"].InnerText.Split(',')[0], out intValue)) device.wheelCenterPoint.X = intValue;
+                    if (int.TryParse(node["wheelCenterPoint"].InnerText.Split(',')[1], out intValue)) device.wheelCenterPoint.Y = intValue;
+                    if (int.TryParse(node["wheel90DegPointLeft"].InnerText.Split(',')[0], out intValue)) device.wheel90DegPointLeft.X = intValue;
+                    if (int.TryParse(node["wheel90DegPointLeft"].InnerText.Split(',')[1], out intValue)) device.wheel90DegPointLeft.Y = intValue;
+                    if (int.TryParse(node["wheel90DegPointRight"].InnerText.Split(',')[0], out intValue)) device.wheel90DegPointRight.X = intValue;
+                    if (int.TryParse(node["wheel90DegPointRight"].InnerText.Split(',')[1], out intValue)) device.wheel90DegPointRight.Y = intValue;
 
                     loaded = true;
                 }
@@ -4463,12 +4358,12 @@ namespace DS4Windows
                 XmlDocument xmlDoc = new XmlDocument();
                 xmlDoc.Load(m_controllerConfigs);
 
-                XmlNode node = xmlDoc.SelectSingleNode("/Controllers/Controller[@Mac=\"" + device.getMacAddress() + "\"]");
+                XmlNode node = xmlDoc.SelectSingleNode("/Controllers/Controller[@Mac=\"" + device.MacAddress + "\"]");
                 if (node == null)
                 {
                     XmlNode xmlControllersNode = xmlDoc.SelectSingleNode("/Controllers");
                     XmlElement el = xmlDoc.CreateElement("Controller");
-                    el.SetAttribute("Mac", device.getMacAddress());
+                    el.SetAttribute("Mac", device.MacAddress);
 
                     el.AppendChild(xmlDoc.CreateElement("wheelCenterPoint"));
                     el.AppendChild(xmlDoc.CreateElement("wheel90DegPointLeft"));
@@ -4790,7 +4685,7 @@ namespace DS4Windows
             launchProgram[device] = string.Empty;
             dinputOnly[device] = false;
             startTouchpadOff[device] = false;
-            useTPforControls[device] = false;
+            UseTouchPadForControls[device] = false;
             useSAforMouse[device] = false;
             sATriggers[device] = "-1";
             sATriggerCond[device] = true;
@@ -4827,7 +4722,7 @@ namespace DS4Windows
             setSZOutCurveMode(device, 0);
             trackballMode[device] = false;
             trackballFriction[device] = 10.0;
-            outputDevType[device] = OutContType.X360;
+            outputDevType[device] = OutControllerType.X360;
             ds4Mapping = false;
         }
 
@@ -4837,7 +4732,7 @@ namespace DS4Windows
             bool xinputPlug = false;
             bool xinputStatus = false;
 
-            OutContType oldContType = Global.activeOutDevType[device];
+            OutControllerType oldContType = Global.ActiveOutDevType[device];
 
             // Make sure to reset currently set profile values before parsing
             ResetProfile(device);
@@ -4866,18 +4761,20 @@ namespace DS4Windows
         }
 
         private void CheckOldDevicestatus(int device, ControlService control,
-            OutContType oldContType, out bool xinputPlug, out bool xinputStatus)
+            OutControllerType oldContType, out bool xinputPlug, out bool xinputStatus)
         {
             xinputPlug = false;
             xinputStatus = false;
 
             if (device < 4)
             {
-                bool oldUseDInputOnly = Global.useDInputOnly[device];
-                DS4Device tempDevice = control.DS4Controllers[device];
-                bool exists = tempBool = (tempDevice != null);
-                bool synced = tempBool = exists ? tempDevice.isSynced() : false;
-                bool isAlive = tempBool = exists ? tempDevice.IsAlive() : false;
+                bool oldUseDInputOnly = Global.UseDInputOnly[device];
+                DS4Device tempDevice = control.Controllers[device].Device;
+
+                bool exists = tempDevice != null;
+                bool synced = exists && tempDevice.IsSynced;
+                bool isAlive = exists && tempDevice.IsAlive;
+
                 if (dinputOnly[device] != oldUseDInputOnly)
                 {
                     if (dinputOnly[device] == true)
@@ -4901,39 +4798,39 @@ namespace DS4Windows
 
         private void PostLoadSnippet(int device, ControlService control, bool xinputStatus, bool xinputPlug)
         {
-            DS4Device tempDev = control.DS4Controllers[device];
-            if (tempDev != null && tempDev.isSynced())
+            DS4Device tempDev = control.Controllers[device].Device;
+            if (tempDev != null && tempDev.IsSynced)
             {
-                tempDev.queueEvent(() =>
+                tempDev.QueueEvent(() =>
                 {
-                    tempDev.setIdleTimeout(idleDisconnectTimeout[device]);
-                    tempDev.setBTPollRate(btPollRate[device]);
+                    tempDev.IdleTimeout = idleDisconnectTimeout[device];
+                    tempDev.BTPollRate = btPollRate[device];
                     if (xinputStatus && xinputPlug)
                     {
-                        OutputDevice tempOutDev = control.outputDevices[device];
+                        OutputDevice tempOutDev = control.Controllers[device].Output;
                         if (tempOutDev != null)
                         {
                             tempOutDev = null;
-                            Global.activeOutDevType[device] = OutContType.None;
+                            Global.ActiveOutDevType[device] = OutControllerType.None;
                             control.UnplugOutDev(device, tempDev);
                         }
 
-                        OutContType tempContType = outputDevType[device];
+                        OutControllerType tempContType = outputDevType[device];
                         control.PluginOutDev(device, tempDev);
                         //Global.useDInputOnly[device] = false;
 
                     }
                     else if (xinputStatus && !xinputPlug)
                     {
-                        Global.activeOutDevType[device] = OutContType.None;
+                        Global.ActiveOutDevType[device] = OutControllerType.None;
                         control.UnplugOutDev(device, tempDev);
                     }
 
                     tempDev.RumbleAutostopTime = rumbleAutostopTime[device];
-                    tempDev.setRumble(0, 0);                    
+                    tempDev.SetRumble(0, 0);                    
                 });
 
-                Program.rootHub.touchPad[device]?.ResetTrackAccel(trackballFriction[device]);
+                Program.RootHub.Controllers[device].TouchPad?.ResetTrackAccel(trackballFriction[device]);
             }
         }
     }
@@ -4943,7 +4840,7 @@ namespace DS4Windows
         public enum ActionTypeId { None, Key, Program, Profile, Macro, DisconnectBT, BatteryCheck, MultiAction, XboxGameDVR, SASteeringWheelEmulationCalibrate }
 
         public string name;
-        public List<DS4Controls> trigger = new List<DS4Controls>();
+        public List<DS4Controls> Triggers = new List<DS4Controls>();
         public string type;
         public ActionTypeId typeID;
         public string controls;
@@ -4970,12 +4867,12 @@ namespace DS4Windows
         {
             this.name = name;
             this.type = type;
-            this.typeID = ActionTypeId.None;
+            typeID = ActionTypeId.None;
             this.controls = controls;
             delayTime = delay;
             string[] ctrls = controls.Split('/');
             foreach (string s in ctrls)
-                trigger.Add(getDS4ControlsByName(s));
+                Triggers.Add(getDS4ControlsByName(s));
 
             if (type == "Key")
             {
@@ -4985,7 +4882,7 @@ namespace DS4Windows
                 {
                     string[] exts = extras.Split('\n');
                     pressRelease = exts[0] == "Release";
-                    this.ucontrols = exts[1];
+                    ucontrols = exts[1];
                     string[] uctrls = exts[1].Split('/');
                     foreach (string s in uctrls)
                         uTrigger.Add(getDS4ControlsByName(s));
@@ -5047,7 +4944,7 @@ namespace DS4Windows
             }
             else if (type == "XboxGameDVR")
             {
-                this.typeID = ActionTypeId.XboxGameDVR;
+                typeID = ActionTypeId.XboxGameDVR;
                 string[] dets = details.Split(',');
                 List<string> macros = new List<string>();
                 //string dets = "";
@@ -5079,11 +4976,11 @@ namespace DS4Windows
 
             if (type != "Key" && !string.IsNullOrEmpty(extras))
             {
-                this.ucontrols = extras;
+                ucontrols = extras;
                 string[] uctrls = extras.Split('/');
                 foreach (string s in uctrls)
                 {
-                    if (s == "AutomaticUntrigger") this.automaticUntrigger = true;
+                    if (s == "AutomaticUntrigger") automaticUntrigger = true;
                     else uTrigger.Add(getDS4ControlsByName(s));
                 }
             }

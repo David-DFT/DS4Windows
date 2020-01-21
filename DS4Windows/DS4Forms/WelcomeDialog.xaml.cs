@@ -37,7 +37,7 @@ namespace DS4WinWPF.DS4Forms
 
         private void FinishedBtn_Click(object sender, RoutedEventArgs e)
         {
-            this.Close();
+            Close();
         }
 
         private void VigemInstallBtn_Click(object sender, RoutedEventArgs e)
@@ -115,7 +115,7 @@ namespace DS4WinWPF.DS4Forms
             bool finished = false;
             if (monitorProc != null && monitorProc.HasExited)
             {
-                if (DS4Windows.Global.IsViGEmBusInstalled())
+                if (DS4Windows.Global.IsViGEmInstalled)
                 {
                     Dispatcher.BeginInvoke((Action)(() => { vigemInstallBtn.Content = Properties.Resources.InstallComplete; }));
                 }

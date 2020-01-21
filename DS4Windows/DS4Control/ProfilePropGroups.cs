@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace DS4Windows
+﻿namespace DS4Windows
 {
     public class SquareStickInfo
     {

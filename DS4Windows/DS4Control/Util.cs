@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using System.Security;
-using System.Text;
 
 namespace DS4Windows
 {
@@ -63,43 +62,43 @@ namespace DS4Windows
         [StructLayout(LayoutKind.Sequential)]
         public class DEV_BROADCAST_DEVICEINTERFACE
         {
-            internal Int32 dbcc_size;
-            internal Int32 dbcc_devicetype;
-            internal Int32 dbcc_reserved;
+            internal int dbcc_size;
+            internal int dbcc_devicetype;
+            internal int dbcc_reserved;
             internal Guid dbcc_classguid;
-            internal Int16 dbcc_name;
+            internal short dbcc_name;
         }
 
-        public const Int32 DBT_DEVTYP_DEVICEINTERFACE = 0x0005;
+        public const int DBT_DEVTYP_DEVICEINTERFACE = 0x0005;
 
-        public const Int32 DEVICE_NOTIFY_WINDOW_HANDLE = 0x0000;
-        public const Int32 DEVICE_NOTIFY_SERVICE_HANDLE = 0x0001;
-        public const Int32 DEVICE_NOTIFY_ALL_INTERFACE_CLASSES = 0x0004;
+        public const int DEVICE_NOTIFY_WINDOW_HANDLE = 0x0000;
+        public const int DEVICE_NOTIFY_SERVICE_HANDLE = 0x0001;
+        public const int DEVICE_NOTIFY_ALL_INTERFACE_CLASSES = 0x0004;
 
-        public const Int32 WM_CREATE = 0x0001;
-        public const Int32 WM_DEVICECHANGE = 0x0219;
+        public const int WM_CREATE = 0x0001;
+        public const int WM_DEVICECHANGE = 0x0219;
 
-        public const Int32 DIGCF_PRESENT = 0x0002;
-        public const Int32 DIGCF_DEVICEINTERFACE = 0x0010;
+        public const int DIGCF_PRESENT = 0x0002;
+        public const int DIGCF_DEVICEINTERFACE = 0x0010;
 
         [DllImport("ntdll.dll", SetLastError = true)]
         public static extern int NtSetInformationProcess(IntPtr processHandle,
            PROCESS_INFORMATION_CLASS processInformationClass, ref IntPtr processInformation, uint processInformationLength);
 
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        protected static extern IntPtr RegisterDeviceNotification(IntPtr hRecipient, IntPtr NotificationFilter, Int32 Flags);
+        protected static extern IntPtr RegisterDeviceNotification(IntPtr hRecipient, IntPtr NotificationFilter, int Flags);
 
         [DllImport("user32.dll", SetLastError = true)]
-        protected static extern Boolean UnregisterDeviceNotification(IntPtr Handle);
+        protected static extern bool UnregisterDeviceNotification(IntPtr Handle);
 
-        public static Boolean RegisterNotify(IntPtr Form, Guid Class, ref IntPtr Handle, Boolean Window = true)
+        public static bool RegisterNotify(IntPtr Form, Guid Class, ref IntPtr Handle, bool Window = true)
         {
             IntPtr devBroadcastDeviceInterfaceBuffer = IntPtr.Zero;
 
             try
             {
                 DEV_BROADCAST_DEVICEINTERFACE devBroadcastDeviceInterface = new DEV_BROADCAST_DEVICEINTERFACE();
-                Int32 Size = Marshal.SizeOf(devBroadcastDeviceInterface);
+                int Size = Marshal.SizeOf(devBroadcastDeviceInterface);
 
                 devBroadcastDeviceInterface.dbcc_size = Size;
                 devBroadcastDeviceInterface.dbcc_devicetype = DBT_DEVTYP_DEVICEINTERFACE;
@@ -129,7 +128,7 @@ namespace DS4Windows
             }
         }
 
-        public static Boolean UnregisterNotify(IntPtr Handle)
+        public static bool UnregisterNotify(IntPtr Handle)
         {
             try
             {

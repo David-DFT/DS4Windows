@@ -9,8 +9,7 @@ namespace DS4Windows
         public bool Square, Triangle, Circle, Cross;
         public bool DpadUp, DpadDown, DpadLeft, DpadRight;
         public bool L1, L2Btn, L3, R1, R2Btn, R3;
-        public bool Share, Options, PS, Touch1, Touch2, TouchButton, TouchRight,
-            TouchLeft, Touch1Finger, Touch2Fingers;
+        public bool Share, Options, PS, Touch1, Touch2, TouchButton, TouchRight, TouchLeft, Touch1Finger, Touch2Fingers;
         public byte Touch1Identifier, Touch2Identifier;
         public byte LX, RX, LY, RY, L2, R2;
         public byte FrameCounter; // 0, 1, 2...62, 63, 0....
@@ -28,7 +27,7 @@ namespace DS4Windows
         public ulong totalMicroSec = 0;
         public SixAxis Motion = null;
         public static readonly int DEFAULT_AXISDIR_VALUE = 127;
-        public Int32 SASteeringWheelEmulationUnit;
+        public int SASteeringWheelEmulationUnit;
 
         public struct TrackPadTouch
         {
@@ -125,10 +124,7 @@ namespace DS4Windows
             SASteeringWheelEmulationUnit = state.SASteeringWheelEmulationUnit;
         }
 
-        public DS4State Clone()
-        {
-            return new DS4State(this);
-        }
+        public DS4State Clone() => new DS4State(this);
 
         public void CopyTo(DS4State state)
         {
@@ -185,16 +181,16 @@ namespace DS4Windows
             state.SASteeringWheelEmulationUnit = SASteeringWheelEmulationUnit;
         }
 
-        public void calculateStickAngles()
+        public void CalculateStickAngles()
         {
-            double lsangle = Math.Atan2(-(LY - 128), (LX - 128));
+            double lsangle = Math.Atan2(-(LY - 128), LX - 128);
             LSAngleRad = lsangle;
             lsangle = (lsangle >= 0 ? lsangle : (2 * Math.PI + lsangle)) * 180 / Math.PI;
             LSAngle = lsangle;
             LXUnit = Math.Abs(Math.Cos(LSAngleRad));
             LYUnit = Math.Abs(Math.Sin(LSAngleRad));
 
-            double rsangle = Math.Atan2(-(RY - 128), (RX - 128));
+            double rsangle = Math.Atan2(-(RY - 128), RX - 128);
             RSAngleRad = rsangle;
             rsangle = (rsangle >= 0 ? rsangle : (2 * Math.PI + rsangle)) * 180 / Math.PI;
             RSAngle = rsangle;
@@ -202,20 +198,20 @@ namespace DS4Windows
             RYUnit = Math.Abs(Math.Sin(RSAngleRad));
         }
 
-        public void rotateLSCoordinates(double rotation)
+        public void RotateLSCoordinates(double rotation)
         {
             double sinAngle = Math.Sin(rotation), cosAngle = Math.Cos(rotation);
             double tempLX = LX - 128.0, tempLY = LY - 128.0;
-            LX = (Byte)(Global.Clamp(-128.0, (tempLX * cosAngle - tempLY * sinAngle), 127.0) + 128.0);
-            LY = (Byte)(Global.Clamp(-128.0, (tempLX * sinAngle + tempLY * cosAngle), 127.0) + 128.0);
+            LX = (byte)(Global.Clamp(-128.0, tempLX * cosAngle - tempLY * sinAngle, 127.0) + 128.0);
+            LY = (byte)(Global.Clamp(-128.0, tempLX * sinAngle + tempLY * cosAngle, 127.0) + 128.0);
         }
 
-        public void rotateRSCoordinates(double rotation)
+        public void RotateRSCoordinates(double rotation)
         {
             double sinAngle = Math.Sin(rotation), cosAngle = Math.Cos(rotation);
             double tempRX = RX - 128.0, tempRY = RY - 128.0;
-            RX = (Byte)(Global.Clamp(-128.0, (tempRX * cosAngle - tempRY * sinAngle), 127.0) + 128.0);
-            RY = (Byte)(Global.Clamp(-128.0, (tempRX * sinAngle + tempRY * cosAngle), 127.0) + 128.0);
+            RX = (byte)(Global.Clamp(-128.0, tempRX * cosAngle - tempRY * sinAngle, 127.0) + 128.0);
+            RY = (byte)(Global.Clamp(-128.0, tempRX * sinAngle + tempRY * cosAngle, 127.0) + 128.0);
         }
     }
 }

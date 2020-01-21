@@ -6,7 +6,7 @@ namespace DS4Windows
     {
         protected DateTime pastTime, firstTap, TimeofEnd;
         protected Touch firstTouch, secondTouch;
-        private DS4State s = new DS4State();
+        private DS4State state = new DS4State();
         protected int deviceNum;
         private DS4Device dev = null;
         private readonly MouseCursor cursor;
@@ -73,12 +73,12 @@ namespace DS4Windows
             set { toggleGyroMouse = value; ResetToggleGyroM(); } }
         bool currentToggleGyroM = false;
 
-        public virtual void sixaxisMoved(DS4SixAxis sender, SixAxisEventArgs arg)
+        public virtual void SixAxisMoved(DS4SixAxis sender, SixAxisEventArgs arg)
         {
             GyroOutMode outMode = Global.GetGyroOutMode(deviceNum);
             if (outMode == GyroOutMode.Mouse && Global.getGyroSensitivity(deviceNum) > 0)
             {
-                s = dev.getCurrentStateRef();
+                state = dev.GetCurrentStateRef();
 
                 useReverseRatchet = Global.getGyroTriggerTurns(deviceNum);
                 int i = 0;
@@ -91,12 +91,12 @@ namespace DS4Windows
                     for (int index = 0, arlen = ss.Length; index < arlen; index++)
                     {
                         s = ss[index];
-                        if (andCond && !(int.TryParse(s, out i) && getDS4ControlsByName(i)))
+                        if (andCond && !(int.TryParse(s, out i) && GetDS4ControlsByName(i)))
                         {
                             triggeractivated = false;
                             break;
                         }
-                        else if (!andCond && int.TryParse(s, out i) && getDS4ControlsByName(i))
+                        else if (!andCond && int.TryParse(s, out i) && GetDS4ControlsByName(i))
                         {
                             triggeractivated = true;
                             break;
@@ -129,7 +129,7 @@ namespace DS4Windows
             }
             else if (outMode == GyroOutMode.MouseJoystick)
             {
-                s = dev.getCurrentStateRef();
+                state = dev.GetCurrentStateRef();
 
                 useReverseRatchet = Global.GetGyroMouseStickTriggerTurns(deviceNum);
                 int i = 0;
@@ -142,12 +142,12 @@ namespace DS4Windows
                     for (int index = 0, arlen = ss.Length; index < arlen; index++)
                     {
                         s = ss[index];
-                        if (andCond && !(int.TryParse(s, out i) && getDS4ControlsByName(i)))
+                        if (andCond && !(int.TryParse(s, out i) && GetDS4ControlsByName(i)))
                         {
                             triggeractivated = false;
                             break;
                         }
-                        else if (!andCond && int.TryParse(s, out i) && getDS4ControlsByName(i))
+                        else if (!andCond && int.TryParse(s, out i) && GetDS4ControlsByName(i))
                         {
                             triggeractivated = true;
                             break;
@@ -316,30 +316,30 @@ namespace DS4Windows
             Mapping.gyroStickY[deviceNum] = axisYOut;
         }
 
-        private bool getDS4ControlsByName(int key)
+        private bool GetDS4ControlsByName(int key)
         {
             switch (key)
             {
                 case -1: return true;
-                case 0: return s.Cross;
-                case 1: return s.Circle;
-                case 2: return s.Square;
-                case 3: return s.Triangle;
-                case 4: return s.L1;
-                case 5: return s.L2 > 128;
-                case 6: return s.R1;
-                case 7: return s.R2 > 128;
-                case 8: return s.DpadUp;
-                case 9: return s.DpadDown;
-                case 10: return s.DpadLeft;
-                case 11: return s.DpadRight;
-                case 12: return s.L3;
-                case 13: return s.R3;
-                case 14: return s.Touch1Finger;
-                case 15: return s.Touch2Fingers;
-                case 16: return s.Options;
-                case 17: return s.Share;
-                case 18: return s.PS;
+                case 0: return state.Cross;
+                case 1: return state.Circle;
+                case 2: return state.Square;
+                case 3: return state.Triangle;
+                case 4: return state.L1;
+                case 5: return state.L2 > 128;
+                case 6: return state.R1;
+                case 7: return state.R2 > 128;
+                case 8: return state.DpadUp;
+                case 9: return state.DpadDown;
+                case 10: return state.DpadLeft;
+                case 11: return state.DpadRight;
+                case 12: return state.L3;
+                case 13: return state.R3;
+                case 14: return state.Touch1Finger;
+                case 15: return state.Touch2Fingers;
+                case 16: return state.Options;
+                case 17: return state.Share;
+                case 18: return state.PS;
                 default: break;
             }
 
@@ -347,11 +347,11 @@ namespace DS4Windows
         }
 
         private bool tempBool = false;
-        public virtual void touchesMoved(DS4Touchpad sender, TouchpadEventArgs arg)
+        public virtual void TouchesMoved(DS4Touchpad sender, TouchpadEventArgs arg)
         {
-            s = dev.getCurrentStateRef();
+            state = dev.GetCurrentStateRef();
 
-            if (Global.getUseTPforControls(deviceNum) == false)
+            if (Global.GetUseTouchPadForControls(deviceNum) == false)
             {
                 if (Global.GetTouchActive(deviceNum))
                 {
@@ -359,15 +359,15 @@ namespace DS4Windows
                     tempBool = true;
                     for (int i = 0, arlen = disArray.Length; tempBool && i < arlen; i++)
                     {
-                        if (getDS4ControlsByName(disArray[i]) == false)
+                        if (GetDS4ControlsByName(disArray[i]) == false)
                             tempBool = false;
                     }
 
                     if (Global.getTrackballMode(deviceNum))
                     {
                         int iIndex = trackballBufferTail;
-                        trackballXBuffer[iIndex] = (arg.touches[0].deltaX * TRACKBALL_SCALE) / dev.getCurrentStateRef().elapsedTime;
-                        trackballYBuffer[iIndex] = (arg.touches[0].deltaY * TRACKBALL_SCALE) / dev.getCurrentStateRef().elapsedTime;
+                        trackballXBuffer[iIndex] = (arg.touches[0].deltaX * TRACKBALL_SCALE) / dev.GetCurrentStateRef().elapsedTime;
+                        trackballYBuffer[iIndex] = (arg.touches[0].deltaY * TRACKBALL_SCALE) / dev.GetCurrentStateRef().elapsedTime;
                         trackballBufferTail = (iIndex + 1) % TRACKBALL_BUFFER_LEN;
                         if (trackballBufferHead == trackballBufferTail)
                             trackballBufferHead = (trackballBufferHead + 1) % TRACKBALL_BUFFER_LEN;
@@ -413,12 +413,12 @@ namespace DS4Windows
                     slideleft = true;
             }
 
-            synthesizeMouseButtons();
+            SynthesizeMouseButtons();
         }
 
-        public virtual void touchesBegan(DS4Touchpad sender, TouchpadEventArgs arg)
+        public virtual void TouchesBegan(DS4Touchpad sender, TouchpadEventArgs arg)
         {
-            if (!Global.UseTPforControls[deviceNum])
+            if (!Global.UseTouchPadForControls[deviceNum])
             {
                 Array.Clear(trackballXBuffer, 0, TRACKBALL_BUFFER_LEN);
                 Array.Clear(trackballYBuffer, 0, TRACKBALL_BUFFER_LEN);
@@ -445,18 +445,18 @@ namespace DS4Windows
                     secondtouchbegin = true;
             }
 
-            s = dev.getCurrentStateRef();
-            synthesizeMouseButtons();
+            state = dev.GetCurrentStateRef();
+            SynthesizeMouseButtons();
         }
 
-        public virtual void touchesEnded(DS4Touchpad sender, TouchpadEventArgs arg)
+        public virtual void TouchesEnded(DS4Touchpad sender, TouchpadEventArgs arg)
         {
-            s = dev.getCurrentStateRef();
+            state = dev.GetCurrentStateRef();
             slideright = slideleft = false;
             swipeUp = swipeDown = swipeLeft = swipeRight = false;
             swipeUpB = swipeDownB = swipeLeftB = swipeRightB = 0;
             byte tapSensitivity = Global.getTapSensitivity(deviceNum);
-            if (tapSensitivity != 0 && !Global.getUseTPforControls(deviceNum))
+            if (tapSensitivity != 0 && !Global.GetUseTouchPadForControls(deviceNum))
             {
                 if (secondtouchbegin)
                 {
@@ -482,13 +482,13 @@ namespace DS4Windows
             }
             else
             {
-                if (Global.getUseTPforControls(deviceNum) == false)
+                if (Global.GetUseTouchPadForControls(deviceNum) == false)
                 {
                     int[] disArray = Global.getTouchDisInvertTriggers(deviceNum);
                     tempBool = true;
                     for (int i = 0, arlen = disArray.Length; tempBool && i < arlen; i++)
                     {
-                        if (getDS4ControlsByName(disArray[i]) == false)
+                        if (GetDS4ControlsByName(disArray[i]) == false)
                             tempBool = false;
                     }
 
@@ -523,12 +523,12 @@ namespace DS4Windows
                         int signX = Math.Sign(trackballXVel);
                         int signY = Math.Sign(trackballYVel);
                         
-                        double trackXvDecay = Math.Min(Math.Abs(trackballXVel), trackballAccel * s.elapsedTime * normX);
-                        double trackYvDecay = Math.Min(Math.Abs(trackballYVel), trackballAccel * s.elapsedTime * normY);
+                        double trackXvDecay = Math.Min(Math.Abs(trackballXVel), trackballAccel * state.elapsedTime * normX);
+                        double trackYvDecay = Math.Min(Math.Abs(trackballYVel), trackballAccel * state.elapsedTime * normY);
                         double xVNew = trackballXVel - (trackXvDecay * signX);
                         double yVNew = trackballYVel - (trackYvDecay * signY);
-                        double xMotion = (xVNew * s.elapsedTime) / TRACKBALL_SCALE;
-                        double yMotion = (yVNew * s.elapsedTime) / TRACKBALL_SCALE;
+                        double xMotion = (xVNew * state.elapsedTime) / TRACKBALL_SCALE;
+                        double yMotion = (yVNew * state.elapsedTime) / TRACKBALL_SCALE;
                         if (xMotion != 0.0)
                         {
                             xMotion += trackballDXRemain;
@@ -568,32 +568,25 @@ namespace DS4Windows
                 }
             }
 
-            synthesizeMouseButtons();
+            SynthesizeMouseButtons();
         }
 
-        private bool isLeft(Touch t)
-        {
-            return t.hwX < 1920 * 2 / 5;
-        }
+        private bool IsLeft(Touch t) => t.hwX < 1920 * 2 / 5;
+        private bool IsRight(Touch t) => t.hwX >= 1920 * 2 / 5;
 
-        private bool isRight(Touch t)
+        public virtual void TouchUnchanged(DS4Touchpad sender, EventArgs unused)
         {
-            return t.hwX >= 1920 * 2 / 5;
-        }
-
-        public virtual void touchUnchanged(DS4Touchpad sender, EventArgs unused)
-        {
-            s = dev.getCurrentStateRef();
+            state = dev.GetCurrentStateRef();
 
             if (trackballActive)
             {
-                if (Global.getUseTPforControls(deviceNum) == false)
+                if (Global.GetUseTouchPadForControls(deviceNum) == false)
                 {
                     int[] disArray = Global.getTouchDisInvertTriggers(deviceNum);
                     tempBool = true;
                     for (int i = 0, arlen = disArray.Length; tempBool && i < arlen; i++)
                     {
-                        if (getDS4ControlsByName(disArray[i]) == false)
+                        if (GetDS4ControlsByName(disArray[i]) == false)
                             tempBool = false;
                     }
 
@@ -602,12 +595,12 @@ namespace DS4Windows
                     double normY = Math.Abs(Math.Sin(tempAngle));
                     int signX = Math.Sign(trackballXVel);
                     int signY = Math.Sign(trackballYVel);
-                    double trackXvDecay = Math.Min(Math.Abs(trackballXVel), trackballAccel * s.elapsedTime * normX);
-                    double trackYvDecay = Math.Min(Math.Abs(trackballYVel), trackballAccel * s.elapsedTime * normY);
+                    double trackXvDecay = Math.Min(Math.Abs(trackballXVel), trackballAccel * state.elapsedTime * normX);
+                    double trackYvDecay = Math.Min(Math.Abs(trackballYVel), trackballAccel * state.elapsedTime * normY);
                     double xVNew = trackballXVel - (trackXvDecay * signX);
                     double yVNew = trackballYVel - (trackYvDecay * signY);
-                    double xMotion = (xVNew * s.elapsedTime) / TRACKBALL_SCALE;
-                    double yMotion = (yVNew * s.elapsedTime) / TRACKBALL_SCALE;
+                    double xMotion = (xVNew * state.elapsedTime) / TRACKBALL_SCALE;
+                    double yMotion = (yVNew * state.elapsedTime) / TRACKBALL_SCALE;
                     if (xMotion != 0.0)
                     {
                         xMotion += trackballDXRemain;
@@ -646,13 +639,13 @@ namespace DS4Windows
                 }
             }
 
-            if (s.TouchButton)
-                synthesizeMouseButtons();
+            if (state.TouchButton)
+                SynthesizeMouseButtons();
         }
 
         public bool dragging, dragging2;
 
-        private void synthesizeMouseButtons()
+        private void SynthesizeMouseButtons()
         {
             if (Global.GetDS4Action(deviceNum, DS4Controls.TouchLeft, false) == null && leftDown)
             {
@@ -673,7 +666,7 @@ namespace DS4Windows
             if (Global.GetDS4Action(deviceNum, DS4Controls.TouchMulti, false) == null && multiDown)
                 Mapping.MapClick(deviceNum, Mapping.Click.Right);
 
-            if (!Global.UseTPforControls[deviceNum])
+            if (!Global.UseTouchPadForControls[deviceNum])
             {
                 if (tappedOnce)
                 {
@@ -697,16 +690,16 @@ namespace DS4Windows
             }
         }
 
-        public virtual void touchButtonUp(DS4Touchpad sender, TouchpadEventArgs arg)
+        public virtual void TouchButtonUp(DS4Touchpad sender, TouchpadEventArgs arg)
         {
             pushed = DS4Controls.None;
             upperDown = leftDown = rightDown = multiDown = false;
-            s = dev.getCurrentStateRef();
-            if (s.Touch1 || s.Touch2)
-                synthesizeMouseButtons();
+            state = dev.GetCurrentStateRef();
+            if (state.Touch1 || state.Touch2)
+                SynthesizeMouseButtons();
         }
 
-        public virtual void touchButtonDown(DS4Touchpad sender, TouchpadEventArgs arg)
+        public virtual void TouchButtonDown(DS4Touchpad sender, TouchpadEventArgs arg)
         {
             if (arg.touches == null)
                 upperDown = true;
@@ -717,17 +710,17 @@ namespace DS4Windows
                 if ((Global.LowerRCOn[deviceNum] && arg.touches[0].hwX > (1920 * 3) / 4 && arg.touches[0].hwY > (960 * 3) / 4))
                     Mapping.MapClick(deviceNum, Mapping.Click.Right);
 
-                if (isLeft(arg.touches[0]))
+                if (IsLeft(arg.touches[0]))
                     leftDown = true;
-                else if (isRight(arg.touches[0]))
+                else if (IsRight(arg.touches[0]))
                     rightDown = true;
             }
 
-            s = dev.getCurrentStateRef();
-            synthesizeMouseButtons();
+            state = dev.GetCurrentStateRef();
+            SynthesizeMouseButtons();
         }
 
-        public void populatePriorButtonStates()
+        public void PopulatePriorButtonStates()
         {
             priorUpperDown = upperDown;
             priorLeftDown = leftDown;
@@ -740,9 +733,6 @@ namespace DS4Windows
             priorSwipeDownB = swipeDownB; priorSwipedB = swipedB;
         }
 
-        public DS4State getDS4State()
-        {
-            return s;
-        }
+        public DS4State GetDS4State() => state;
     }
 }
