@@ -77,7 +77,7 @@ namespace DS4WinWPF
                         string tempname = matchedProfileEntity.ProfileNames[j];
                         if (tempname != string.Empty && tempname != "(none)")
                         {
-                            if ((Global.UseTempProfile[j] && tempname != Global.tempprofilename[j]) ||
+                            if ((Global.UseTempProfile[j] && tempname != Global.TempProfileName[j]) ||
                                 (!Global.UseTempProfile[j] && tempname != Global.ProfilePath[j]) ||
                                 forceLoadProfile)
                             {
@@ -138,7 +138,7 @@ namespace DS4WinWPF
                             else
                             {
                                 if (autoProfileDebugLogLevel > 0)
-                                    AppLogger.LogToGui($"DEBUG: Auto-Profile. Unknown process. Existing profile left as active. Controller {j + 1}={Global.tempprofilename[j]}", false);
+                                    AppLogger.LogToGui($"DEBUG: Auto-Profile. Unknown process. Existing profile left as active. Controller {j + 1}={Global.TempProfileName[j]}", false);
                             }
                         }
                     }

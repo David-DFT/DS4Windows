@@ -29,7 +29,7 @@ namespace DS4Windows
         static bool[] fadedirection = new bool[4] { false, false, false, false };
         static DateTime[] oldnow = new DateTime[4] { DateTime.UtcNow, DateTime.UtcNow, DateTime.UtcNow, DateTime.UtcNow };
 
-        public static bool[] Forcelight = new bool[4] { false, false, false, false };
+        public static bool[] ForceLight = new bool[4] { false, false, false, false };
         public static DS4Color[] ForcedColor = new DS4Color[4];
         public static byte[] ForcedFlash = new byte[4];
         internal const int PULSE_FLASH_DURATION = 2000;
@@ -40,7 +40,7 @@ namespace DS4Windows
         public static void UpdateLightBar(DS4Device device, int deviceNum)
         {
             DS4Color color;
-            if (!DefaultLight && !Forcelight[deviceNum])
+            if (!DefaultLight && !ForceLight[deviceNum])
             {
                 if (GetUseCustomLed(deviceNum))
                 {
@@ -248,7 +248,7 @@ namespace DS4Windows
                     }
                 }
             }
-            else if (Forcelight[deviceNum])
+            else if (ForceLight[deviceNum])
             {
                 color = ForcedColor[deviceNum];
             }
@@ -262,7 +262,7 @@ namespace DS4Windows
                     color = new DS4Color(0, 0, 0);
             }
 
-            bool distanceprofile = DistanceProfiles[deviceNum] || tempprofileDistance[deviceNum];
+            bool distanceprofile = DistanceProfiles[deviceNum] || TempProfileDistance[deviceNum];
             //distanceprofile = (ProfilePath[deviceNum].ToLower().Contains("distance") || tempprofilename[deviceNum].ToLower().Contains("distance"));
             if (distanceprofile && !DefaultLight)
             {
@@ -295,7 +295,7 @@ namespace DS4Windows
 
             if (haptics.IsLightBarSet())
             {
-                if (Forcelight[deviceNum] && ForcedFlash[deviceNum] > 0)
+                if (ForceLight[deviceNum] && ForcedFlash[deviceNum] > 0)
                 {
                     haptics.LightBarFlashDurationOff = haptics.LightBarFlashDurationOn = (byte)(25 - ForcedFlash[deviceNum]);
                     haptics.LightBarExplicitlyOff = true;

@@ -45,11 +45,11 @@ namespace DS4Windows
         public virtual void sixaxisMoved(SixAxisEventArgs arg)
         {
             int deltaX = 0, deltaY = 0;
-            deltaX = Global.getGyroMouseHorizontalAxis(deviceNumber) == 0 ? arg.sixAxis.gyroYawFull :
-                arg.sixAxis.gyroRollFull;
-            deltaY = -arg.sixAxis.gyroPitchFull;
+            deltaX = Global.getGyroMouseHorizontalAxis(deviceNumber) == 0 ? arg.SixAxis.GyroYawFull :
+                arg.SixAxis.GyroRollFull;
+            deltaY = -arg.SixAxis.GyroPitchFull;
             //tempDouble = arg.sixAxis.elapsed * 0.001 * 200.0; // Base default speed on 5 ms
-            tempDouble = arg.sixAxis.elapsed * 200.0; // Base default speed on 5 ms
+            tempDouble = arg.SixAxis.Elapsed * 200.0; // Base default speed on 5 ms
 
             gyroSmooth = Global.getGyroSmoothing(deviceNumber);
             double gyroSmoothWeight = 0.0;
@@ -241,7 +241,7 @@ namespace DS4Windows
             int signX = Math.Sign(dx);
             int signY = Math.Sign(dy);
             double coefficient = Global.getTouchSensitivity(deviceNumber) * 0.01;
-            bool jitterCompenstation = Global.getTouchpadJitterCompensation(deviceNumber);
+            bool jitterCompenstation = Global.GetTouchpadJitterCompensation(deviceNumber);
 
             double xMotion = dx != 0 ?
                 coefficient * dx + (normX * (TOUCHPAD_MOUSE_OFFSET * signX)) : 0.0;
@@ -289,7 +289,7 @@ namespace DS4Windows
 
             if (disableInvert == false)
             {
-                int touchpadInvert = tempInt = Global.getTouchpadInvert(deviceNumber);
+                int touchpadInvert = tempInt = Global.GetTouchpadInvert(deviceNumber);
                 if ((touchpadInvert & 0x02) == 2)
                     xAction *= -1;
 

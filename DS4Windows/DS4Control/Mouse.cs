@@ -22,7 +22,7 @@ namespace DS4Windows
         public bool leftDown, rightDown, upperDown, multiDown;
         public bool priorLeftDown, priorRightDown, priorUpperDown, priorMultiDown;
         protected DS4Controls pushed = DS4Controls.None;
-        protected Mapping.Click clicked = Mapping.Click.None;
+        protected Mapping.EClick clicked = Mapping.EClick.None;
         public int CursorGyroDead { get => cursor.GyroCursorDeadZone; set => cursor.GyroCursorDeadZone = value; }
 
         internal const int TRACKBALL_INIT_FICTION = 10;
@@ -195,9 +195,9 @@ namespace DS4Windows
         private void SixMouseStick(SixAxisEventArgs arg)
         {
             int deltaX = 0, deltaY = 0;
-            deltaX = Global.getGyroMouseStickHorizontalAxis(0) == 0 ? arg.sixAxis.gyroYawFull :
-                arg.sixAxis.gyroRollFull;
-            deltaY = -arg.sixAxis.gyroPitchFull;
+            deltaX = Global.getGyroMouseStickHorizontalAxis(0) == 0 ? arg.SixAxis.GyroYawFull :
+                arg.SixAxis.GyroRollFull;
+            deltaY = -arg.SixAxis.GyroPitchFull;
             //int inputX = deltaX, inputY = deltaY;
             int maxDirX = deltaX >= 0 ? 127 : -128;
             int maxDirY = deltaY >= 0 ? 127 : -128;
@@ -210,15 +210,15 @@ namespace DS4Windows
             int signX = Math.Sign(deltaX);
             int signY = Math.Sign(deltaY);
 
-            int deadzoneX = (int)Math.Abs(normX * msinfo.deadZone);
-            int deadzoneY = (int)Math.Abs(normY * msinfo.deadZone);
+            int deadzoneX = (int)Math.Abs(normX * msinfo.DeadZone);
+            int deadzoneY = (int)Math.Abs(normY * msinfo.DeadZone);
 
-            int maxValX = signX * msinfo.maxZone;
-            int maxValY = signY * msinfo.maxZone;
+            int maxValX = signX * msinfo.MaxZone;
+            int maxValY = signY * msinfo.MaxZone;
 
             double xratio = 0.0, yratio = 0.0;
-            double antiX = msinfo.antiDeadX * normX;
-            double antiY = msinfo.antiDeadY * normY;
+            double antiX = msinfo.AntiDeadX * normX;
+            double antiY = msinfo.AntiDeadY * normY;
 
             if (Math.Abs(deltaX) > deadzoneX)
             {
@@ -244,7 +244,7 @@ namespace DS4Windows
                 deltaY = 0;
             }
 
-            if (msinfo.useSmoothing)
+            if (msinfo.UseSmoothing)
             {
                 int iIndex = smoothBufferTail % SMOOTH_BUFFER_LEN;
                 xSmoothBuffer[iIndex] = deltaX;
@@ -261,7 +261,7 @@ namespace DS4Windows
                     x_out += xSmoothBuffer[idx] * currentWeight;
                     y_out += ySmoothBuffer[idx] * currentWeight;
                     finalWeight += currentWeight;
-                    currentWeight *= msinfo.smoothWeight;
+                    currentWeight *= msinfo.SmoothWeight;
                 }
 
                 x_out /= finalWeight;
@@ -269,15 +269,15 @@ namespace DS4Windows
                 y_out /= finalWeight;
                 deltaY = (int)y_out;
 
-                maxValX = deltaX < 0 ? -msinfo.maxZone : msinfo.maxZone;
-                maxValY = deltaY < 0 ? -msinfo.maxZone : msinfo.maxZone;
+                maxValX = deltaX < 0 ? -msinfo.MaxZone : msinfo.MaxZone;
+                maxValY = deltaY < 0 ? -msinfo.MaxZone : msinfo.MaxZone;
                 maxDirX = deltaX >= 0 ? 127 : -128;
                 maxDirY = deltaY >= 0 ? 127 : -128;
             }
 
-            if (msinfo.vertScale != 100)
+            if (msinfo.VertScale != 100)
             {
-                double verticalScale = msinfo.vertScale * 0.01;
+                double verticalScale = msinfo.VertScale * 0.01;
                 deltaY = (int)(deltaY * verticalScale);
             }
 
@@ -295,15 +295,15 @@ namespace DS4Windows
                 yNorm = (1.0 - antiY) * yratio + antiY;
             }
 
-            if (msinfo.inverted != 0)
+            if (msinfo.Inverted != 0)
             {
-                if ((msinfo.inverted & 1) == 1)
+                if ((msinfo.Inverted & 1) == 1)
                 {
                     // Invert max dir value
                     maxDirX = deltaX >= 0 ? -128 : 127;
                 }
 
-                if ((msinfo.inverted & 2) == 2)
+                if ((msinfo.Inverted & 2) == 2)
                 {
                     // Invert max dir value
                     maxDirY = deltaY >= 0 ? -128 : 127;
@@ -312,8 +312,8 @@ namespace DS4Windows
 
             byte axisXOut = (byte)(xNorm * maxDirX + 128.0);
             byte axisYOut = (byte)(yNorm * maxDirY + 128.0);
-            Mapping.gyroStickX[deviceNum] = axisXOut;
-            Mapping.gyroStickY[deviceNum] = axisYOut;
+            Mapping.GyroStickX[deviceNum] = axisXOut;
+            Mapping.GyroStickY[deviceNum] = axisYOut;
         }
 
         private bool GetDS4ControlsByName(int key)
@@ -366,8 +366,8 @@ namespace DS4Windows
                     if (Global.getTrackballMode(deviceNum))
                     {
                         int iIndex = trackballBufferTail;
-                        trackballXBuffer[iIndex] = (arg.touches[0].deltaX * TRACKBALL_SCALE) / dev.GetCurrentStateRef().elapsedTime;
-                        trackballYBuffer[iIndex] = (arg.touches[0].deltaY * TRACKBALL_SCALE) / dev.GetCurrentStateRef().elapsedTime;
+                        trackballXBuffer[iIndex] = (arg.touches[0].deltaX * TRACKBALL_SCALE) / dev.GetCurrentStateRef().ElapsedTime;
+                        trackballYBuffer[iIndex] = (arg.touches[0].deltaY * TRACKBALL_SCALE) / dev.GetCurrentStateRef().ElapsedTime;
                         trackballBufferTail = (iIndex + 1) % TRACKBALL_BUFFER_LEN;
                         if (trackballBufferHead == trackballBufferTail)
                             trackballBufferHead = (trackballBufferHead + 1) % TRACKBALL_BUFFER_LEN;
@@ -476,7 +476,7 @@ namespace DS4Windows
                             TimeofEnd = DateTime.Now; //since arg can't be used in synthesizeMouseButtons
                         }
                         else
-                            Mapping.MapClick(deviceNum, Mapping.Click.Left); //this way no delay if disabled
+                            Mapping.MapClick(deviceNum, Mapping.EClick.Left); //this way no delay if disabled
                     }
                 }
             }
@@ -523,12 +523,12 @@ namespace DS4Windows
                         int signX = Math.Sign(trackballXVel);
                         int signY = Math.Sign(trackballYVel);
                         
-                        double trackXvDecay = Math.Min(Math.Abs(trackballXVel), trackballAccel * state.elapsedTime * normX);
-                        double trackYvDecay = Math.Min(Math.Abs(trackballYVel), trackballAccel * state.elapsedTime * normY);
+                        double trackXvDecay = Math.Min(Math.Abs(trackballXVel), trackballAccel * state.ElapsedTime * normX);
+                        double trackYvDecay = Math.Min(Math.Abs(trackballYVel), trackballAccel * state.ElapsedTime * normY);
                         double xVNew = trackballXVel - (trackXvDecay * signX);
                         double yVNew = trackballYVel - (trackYvDecay * signY);
-                        double xMotion = (xVNew * state.elapsedTime) / TRACKBALL_SCALE;
-                        double yMotion = (yVNew * state.elapsedTime) / TRACKBALL_SCALE;
+                        double xMotion = (xVNew * state.ElapsedTime) / TRACKBALL_SCALE;
+                        double yMotion = (yVNew * state.ElapsedTime) / TRACKBALL_SCALE;
                         if (xMotion != 0.0)
                         {
                             xMotion += trackballDXRemain;
@@ -595,12 +595,12 @@ namespace DS4Windows
                     double normY = Math.Abs(Math.Sin(tempAngle));
                     int signX = Math.Sign(trackballXVel);
                     int signY = Math.Sign(trackballYVel);
-                    double trackXvDecay = Math.Min(Math.Abs(trackballXVel), trackballAccel * state.elapsedTime * normX);
-                    double trackYvDecay = Math.Min(Math.Abs(trackballYVel), trackballAccel * state.elapsedTime * normY);
+                    double trackXvDecay = Math.Min(Math.Abs(trackballXVel), trackballAccel * state.ElapsedTime * normX);
+                    double trackYvDecay = Math.Min(Math.Abs(trackballYVel), trackballAccel * state.ElapsedTime * normY);
                     double xVNew = trackballXVel - (trackXvDecay * signX);
                     double yVNew = trackballYVel - (trackYvDecay * signY);
-                    double xMotion = (xVNew * state.elapsedTime) / TRACKBALL_SCALE;
-                    double yMotion = (yVNew * state.elapsedTime) / TRACKBALL_SCALE;
+                    double xMotion = (xVNew * state.ElapsedTime) / TRACKBALL_SCALE;
+                    double yMotion = (yVNew * state.ElapsedTime) / TRACKBALL_SCALE;
                     if (xMotion != 0.0)
                     {
                         xMotion += trackballDXRemain;
@@ -649,7 +649,7 @@ namespace DS4Windows
         {
             if (Global.GetDS4Action(deviceNum, DS4Controls.TouchLeft, false) == null && leftDown)
             {
-                Mapping.MapClick(deviceNum, Mapping.Click.Left);
+                Mapping.MapClick(deviceNum, Mapping.EClick.Left);
                 dragging2 = true;
             }
             else
@@ -658,13 +658,13 @@ namespace DS4Windows
             }
 
             if (Global.GetDS4Action(deviceNum, DS4Controls.TouchUpper, false) == null && upperDown)
-                Mapping.MapClick(deviceNum, Mapping.Click.Middle);
+                Mapping.MapClick(deviceNum, Mapping.EClick.Middle);
 
             if (Global.GetDS4Action(deviceNum, DS4Controls.TouchRight, false) == null && rightDown)
-                Mapping.MapClick(deviceNum, Mapping.Click.Left);
+                Mapping.MapClick(deviceNum, Mapping.EClick.Left);
 
             if (Global.GetDS4Action(deviceNum, DS4Controls.TouchMulti, false) == null && multiDown)
-                Mapping.MapClick(deviceNum, Mapping.Click.Right);
+                Mapping.MapClick(deviceNum, Mapping.EClick.Right);
 
             if (!Global.UseTouchPadForControls[deviceNum])
             {
@@ -673,14 +673,14 @@ namespace DS4Windows
                     DateTime tester = DateTime.Now;
                     if (tester > (TimeofEnd + TimeSpan.FromMilliseconds((double)(Global.TapSensitivity[deviceNum]) * 1.5)))
                     {
-                        Mapping.MapClick(deviceNum, Mapping.Click.Left);
+                        Mapping.MapClick(deviceNum, Mapping.EClick.Left);
                         tappedOnce = false;
                     }
                     //if it fails the method resets, and tries again with a new tester value (gives tap a delay so tap and hold can work)
                 }
                 if (secondtouchbegin) //if tap and hold (also works as double tap)
                 {
-                    Mapping.MapClick(deviceNum, Mapping.Click.Left);
+                    Mapping.MapClick(deviceNum, Mapping.EClick.Left);
                     dragging = true;
                 }
                 else
@@ -708,7 +708,7 @@ namespace DS4Windows
             else
             {
                 if ((Global.LowerRCOn[deviceNum] && arg.touches[0].hwX > (1920 * 3) / 4 && arg.touches[0].hwY > (960 * 3) / 4))
-                    Mapping.MapClick(deviceNum, Mapping.Click.Right);
+                    Mapping.MapClick(deviceNum, Mapping.EClick.Right);
 
                 if (IsLeft(arg.touches[0]))
                     leftDown = true;

@@ -539,7 +539,7 @@ namespace DS4Windows
 
                 //motion timestamp
                 if (hidReport.Motion != null)
-                    Array.Copy(BitConverter.GetBytes((ulong)hidReport.totalMicroSec), 0, outputData, outIdx, 8);
+                    Array.Copy(BitConverter.GetBytes((ulong)hidReport.TotalMicroSec), 0, outputData, outIdx, 8);
                 else
                     Array.Clear(outputData, outIdx, 8);
 
@@ -548,11 +548,11 @@ namespace DS4Windows
                 //accelerometer
                 if (hidReport.Motion != null)
                 {
-                    Array.Copy(BitConverter.GetBytes((float)hidReport.Motion.accelXG), 0, outputData, outIdx, 4);
+                    Array.Copy(BitConverter.GetBytes((float)hidReport.Motion.AccelXG), 0, outputData, outIdx, 4);
                     outIdx += 4;
-                    Array.Copy(BitConverter.GetBytes((float)hidReport.Motion.accelYG), 0, outputData, outIdx, 4);
+                    Array.Copy(BitConverter.GetBytes((float)hidReport.Motion.AccelYG), 0, outputData, outIdx, 4);
                     outIdx += 4;
-                    Array.Copy(BitConverter.GetBytes((float)-hidReport.Motion.accelZG), 0, outputData, outIdx, 4);
+                    Array.Copy(BitConverter.GetBytes((float)-hidReport.Motion.AccelZG), 0, outputData, outIdx, 4);
                     outIdx += 4;
                 }
                 else
@@ -564,11 +564,11 @@ namespace DS4Windows
                 //gyroscope
                 if (hidReport.Motion != null)
                 {
-                    Array.Copy(BitConverter.GetBytes((float)hidReport.Motion.angVelPitch), 0, outputData, outIdx, 4);
+                    Array.Copy(BitConverter.GetBytes((float)hidReport.Motion.AngVelPitch), 0, outputData, outIdx, 4);
                     outIdx += 4;
-                    Array.Copy(BitConverter.GetBytes((float)hidReport.Motion.angVelYaw), 0, outputData, outIdx, 4);
+                    Array.Copy(BitConverter.GetBytes((float)hidReport.Motion.AngVelYaw), 0, outputData, outIdx, 4);
                     outIdx += 4;
-                    Array.Copy(BitConverter.GetBytes((float)hidReport.Motion.angVelRoll), 0, outputData, outIdx, 4);
+                    Array.Copy(BitConverter.GetBytes((float)hidReport.Motion.AngVelRoll), 0, outputData, outIdx, 4);
                     outIdx += 4;
                 }
                 else

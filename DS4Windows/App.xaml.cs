@@ -12,6 +12,8 @@ using System.Windows;
 using System.Windows.Interop;
 using WPFLocalizeExtension.Engine;
 using NLog;
+using DS4Windows;
+using DS4WinWPF.DS4Forms;
 
 namespace DS4WinWPF
 {
@@ -39,16 +41,16 @@ namespace DS4WinWPF
         }
 
         private Thread controlThread;
-        public static DS4Windows.ControlService RootHub;
-        public static HttpClient requestClient;
+        public static ControlService RootHub;
+        public static HttpClient RequestClient;
         private bool skipSave;
         private bool runShutdown;
         private bool exitApp;
         private Thread testThread;
-        private bool exitComThread = false;
+        private bool ExitComThread = false;
         private const string SingleAppComEventName = "{a52b5b20-d9ee-4f32-8518-307fa14aa0c6}";
-        private EventWaitHandle threadComEvent = null;
-        private Timer collectTimer;
+        private EventWaitHandle ThreadComEvent = null;
+        private Timer CollectTimer;
         private static LoggerHolder logHolder;
 
         private MemoryMappedFile ipcClassNameMMF = null; // MemoryMappedFile for inter-process communication used to hold className of DS4Form window
@@ -77,45 +79,45 @@ namespace DS4WinWPF
 
             // Force Normal IO Priority
             IntPtr ioPrio = new IntPtr(2);
-            DS4Windows.Util.NtSetInformationProcess(Process.GetCurrentProcess().Handle,
-                DS4Windows.Util.PROCESS_INFORMATION_CLASS.ProcessIoPriority, ref ioPrio, 4);
+            Util.NtSetInformationProcess(Process.GetCurrentProcess().Handle,
+                Util.PROCESS_INFORMATION_CLASS.ProcessIoPriority, ref ioPrio, 4);
 
             // Force Normal Page Priority
             IntPtr pagePrio = new IntPtr(5);
-            DS4Windows.Util.NtSetInformationProcess(Process.GetCurrentProcess().Handle,
-                DS4Windows.Util.PROCESS_INFORMATION_CLASS.ProcessPagePriority, ref pagePrio, 4);
+            Util.NtSetInformationProcess(Process.GetCurrentProcess().Handle,
+                Util.PROCESS_INFORMATION_CLASS.ProcessPagePriority, ref pagePrio, 4);
 
             try
             {
                 // another instance is already running if OpenExisting succeeds.
-                threadComEvent = EventWaitHandle.OpenExisting(SingleAppComEventName,
+                ThreadComEvent = EventWaitHandle.OpenExisting(SingleAppComEventName,
                     System.Security.AccessControl.EventWaitHandleRights.Synchronize |
                     System.Security.AccessControl.EventWaitHandleRights.Modify);
-                threadComEvent.Set();  // signal the other instance.
-                threadComEvent.Close();
+                ThreadComEvent.Set();  // signal the other instance.
+                ThreadComEvent.Close();
                 Current.Shutdown();    // Quit temp instance
                 return;
             }
             catch { /* don't care about errors */ }
 
             // Create the Event handle
-            threadComEvent = new EventWaitHandle(false, EventResetMode.ManualReset, SingleAppComEventName);
+            ThreadComEvent = new EventWaitHandle(false, EventResetMode.ManualReset, SingleAppComEventName);
             CreateTempWorkerThread();
 
             CreateControlService();
 
-            DS4Windows.Global.FindConfigLocation();
-            bool firstRun = DS4Windows.Global.firstRun;
+            Global.FindConfigLocation();
+            bool firstRun = Global.FirstRun;
             if (firstRun)
             {
-                DS4Forms.SaveWhere savewh = new DS4Forms.SaveWhere(false);
+                SaveWhere savewh = new SaveWhere(false);
                 savewh.ShowDialog();
             }
 
-            DS4Windows.Global.Load();
+            Global.Load();
             if (!CreateConfDirSkeleton())
             {
-                MessageBox.Show($"Cannot create config folder structure in {DS4Windows.Global.appdatapath}. Exiting",
+                MessageBox.Show($"Cannot create config folder structure in {Global.AppDataPath}. Exiting",
                     "DS4Windows", MessageBoxButton.OK, MessageBoxImage.Error);
                 Current.Shutdown(1);
             }
@@ -123,7 +125,7 @@ namespace DS4WinWPF
             logHolder = new LoggerHolder(RootHub);
             DispatcherUnhandledException += App_DispatcherUnhandledException;
             Logger logger = logHolder.Logger;
-            string version = DS4Windows.Global.exeversion;
+            string version = Global.ExeVersion;
             logger.Info($"DS4Windows version {version}");
             //logger.Info("DS4Windows version 2.0");
             logger.Info("Logger created");
@@ -138,8 +140,8 @@ namespace DS4WinWPF
 
                 //Directory.CreateDirectory(DS4Windows.Global.appdatapath + @"\Profiles\");
                 //Directory.CreateDirectory(DS4Windows.Global.appdatapath + @"\Macros\");
-                DS4Windows.Global.SaveProfile(0, "Default");
-                DS4Windows.Global.ProfilePath[0] = DS4Windows.Global.OlderProfilePath[0] = "Default";
+                Global.SaveProfile(0, "Default");
+                Global.ProfilePath[0] = Global.OlderProfilePath[0] = "Default";
                 /*DS4Windows.Global.ProfilePath[1] = DS4Windows.Global.OlderProfilePath[1] = "Default";
                 DS4Windows.Global.ProfilePath[2] = DS4Windows.Global.OlderProfilePath[2] = "Default";
                 DS4Windows.Global.ProfilePath[3] = DS4Windows.Global.OlderProfilePath[3] = "Default";
@@ -149,14 +151,14 @@ namespace DS4WinWPF
 
             skipSave = false;
 
-            if (!DS4Windows.Global.LoadActions())
+            if (!Global.LoadActions())
             {
-                DS4Windows.Global.CreateStdActions();
+                Global.CreateStdActions();
             }
 
-            SetUICulture(DS4Windows.Global.UseLang);
-            DS4Windows.Global.LoadLinkedProfiles();
-            DS4Forms.MainWindow window = new DS4Forms.MainWindow(parser);
+            SetUICulture(Global.UseLang);
+            Global.LoadLinkedProfiles();
+            MainWindow window = new MainWindow(parser);
             MainWindow = window;
             window.Show();
             window.CheckMinStatus();
@@ -180,9 +182,9 @@ namespace DS4WinWPF
             bool result = true;
             try
             {
-                Directory.CreateDirectory(DS4Windows.Global.appdatapath);
-                Directory.CreateDirectory(DS4Windows.Global.appdatapath + @"\Profiles\");
-                Directory.CreateDirectory(DS4Windows.Global.appdatapath + @"\Logs\");
+                Directory.CreateDirectory(Global.AppDataPath);
+                Directory.CreateDirectory(Global.AppDataPath + @"\Profiles\");
+                Directory.CreateDirectory(Global.AppDataPath + @"\Logs\");
                 //Directory.CreateDirectory(DS4Windows.Global.appdatapath + @"\Macros\");
             }
             catch (UnauthorizedAccessException)
@@ -196,22 +198,20 @@ namespace DS4WinWPF
 
         private void AttemptSave()
         {
-            if (!DS4Windows.Global.Save()) //if can't write to file
+            if (!Global.Save()) //if can't write to file
             {
                 if (MessageBox.Show("Cannot write at current location\nCopy Settings to appdata?", "DS4Windows",
                     MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
                 {
                     try
                     {
-                        Directory.CreateDirectory(DS4Windows.Global.appDataPpath);
-                        File.Copy(DS4Windows.Global.exedirpath + "\\Profiles.xml",
-                            DS4Windows.Global.appDataPpath + "\\Profiles.xml");
-                        File.Copy(DS4Windows.Global.exedirpath + "\\Auto Profiles.xml",
-                            DS4Windows.Global.appDataPpath + "\\Auto Profiles.xml");
-                        Directory.CreateDirectory(DS4Windows.Global.appDataPpath + "\\Profiles");
-                        foreach (string s in Directory.GetFiles(DS4Windows.Global.exedirpath + "\\Profiles"))
+                        Directory.CreateDirectory(Global.AppDataPath);
+                        File.Copy(Global.ExeDirectoryPath + "\\Profiles.xml", Global.AppDataPath + "\\Profiles.xml");
+                        File.Copy(Global.ExeDirectoryPath + "\\Auto Profiles.xml", Global.AppDataPath + "\\Auto Profiles.xml");
+                        Directory.CreateDirectory(Global.AppDataPath + "\\Profiles");
+                        foreach (string s in Directory.GetFiles(Global.ExeDirectoryPath + "\\Profiles"))
                         {
-                            File.Copy(s, DS4Windows.Global.appDataPpath + "\\Profiles\\" + Path.GetFileName(s));
+                            File.Copy(s, Global.AppDataPath + "\\Profiles\\" + Path.GetFileName(s));
                         }
                     }
                     catch { }
@@ -224,7 +224,7 @@ namespace DS4WinWPF
                         "DS4Windows");
                 }
 
-                DS4Windows.Global.appdatapath = null;
+                Global.AppDataPath = null;
                 skipSave = true;
                 Current.Shutdown();
                 return;
@@ -242,7 +242,7 @@ namespace DS4WinWPF
             else if (parser.Driverinstall)
             {
                 CreateBaseThread();
-                DS4Forms.WelcomeDialog dialog = new DS4Forms.WelcomeDialog(true);
+                WelcomeDialog dialog = new WelcomeDialog(true);
                 dialog.ShowDialog();
                 runShutdown = false;
                 exitApp = true;
@@ -250,7 +250,7 @@ namespace DS4WinWPF
             }
             else if (parser.ReenableDevice)
             {
-                DS4Windows.DS4Devices.ReEnableDevice(parser.DeviceInstanceId);
+                DS4Devices.ReEnableDevice(parser.DeviceInstanceId);
                 runShutdown = false;
                 exitApp = true;
                 Current.Shutdown();
@@ -264,8 +264,7 @@ namespace DS4WinWPF
             }
             else if (parser.Command)
             {
-                IntPtr hWndDS4WindowsForm = IntPtr.Zero;
-                hWndDS4WindowsForm = FindWindow(ReadIPCClassNameMMF(), "DS4Windows");
+                IntPtr hWndDS4WindowsForm = FindWindow(ReadIPCClassNameMMF(), "DS4Windows");
                 if (hWndDS4WindowsForm != IntPtr.Zero)
                 {
                     COPYDATASTRUCT cds;
@@ -293,15 +292,19 @@ namespace DS4WinWPF
 
         private void CreateControlService()
         {
-            controlThread = new Thread(() => {
-                RootHub = new DS4Windows.ControlService();
-                DS4Windows.Program.RootHub = RootHub;
-                requestClient = new HttpClient();
-                collectTimer = new Timer(GarbageTask, null, 30000, 30000);
+            controlThread = new Thread(() =>
+            {
+                RootHub = new ControlService();
+                Program.RootHub = RootHub;
+                RequestClient = new HttpClient();
+                CollectTimer = new Timer(GarbageTask, null, 30000, 30000);
 
-            });
-            controlThread.Priority = ThreadPriority.Normal;
-            controlThread.IsBackground = true;
+            })
+            {
+                Priority = ThreadPriority.Normal,
+                IsBackground = true
+            };
+
             controlThread.Start();
             while (controlThread.IsAlive)
                 Thread.SpinWait(500);
@@ -309,13 +312,17 @@ namespace DS4WinWPF
 
         private void CreateBaseThread()
         {
-            controlThread = new Thread(() => {
-                DS4Windows.Program.RootHub = RootHub;
-                requestClient = new HttpClient();
-                collectTimer = new Timer(GarbageTask, null, 30000, 30000);
-            });
-            controlThread.Priority = ThreadPriority.Normal;
-            controlThread.IsBackground = true;
+            controlThread = new Thread(() =>
+            {
+                Program.RootHub = RootHub;
+                RequestClient = new HttpClient();
+                CollectTimer = new Timer(GarbageTask, null, 30000, 30000);
+            })
+            {
+                Priority = ThreadPriority.Normal,
+                IsBackground = true
+            };
+
             controlThread.Start();
             while (controlThread.IsAlive)
                 Thread.SpinWait(500);
@@ -336,16 +343,16 @@ namespace DS4WinWPF
 
         private void SingleAppComThread_DoWork()
         {
-            while (!exitComThread)
+            while (!ExitComThread)
             {
                 // check for a signal.
-                if (threadComEvent.WaitOne())
+                if (ThreadComEvent.WaitOne())
                 {
-                    threadComEvent.Reset();
+                    ThreadComEvent.Reset();
                     // The user tried to start another instance. We can't allow that,
                     // so bring the other instance back into view and enable that one.
                     // That form is created in another thread, so we need some thread sync magic.
-                    if (!exitComThread)
+                    if (!ExitComThread)
                     {
                         Dispatcher.BeginInvoke((Action)(() =>
                         {
@@ -359,7 +366,8 @@ namespace DS4WinWPF
 
         public void CreateIPCClassNameMMF(IntPtr hWnd)
         {
-            if (ipcClassNameMMA != null) return; // Already holding a handle to MMF file. No need to re-write the data
+            if (ipcClassNameMMA != null) 
+                return; // Already holding a handle to MMF file. No need to re-write the data
 
             try
             {
@@ -399,8 +407,8 @@ namespace DS4WinWPF
             }
             finally
             {
-                if (mma != null) mma.Dispose();
-                if (mmf != null) mmf.Dispose();
+                mma?.Dispose();
+                mmf?.Dispose();
             }
 
             return null;
@@ -443,25 +451,18 @@ namespace DS4WinWPF
             if (runShutdown)
             {
                 if (RootHub != null)
-                {
-                    Task.Run(() =>
-                    {
-                        RootHub.Stop();
-                    }).Wait();
-                }
-
+                    Task.Run(() => RootHub.Stop()).Wait();
+                
                 if (!skipSave)
+                    Global.Save();
+                
+                ExitComThread = true;
+                if (ThreadComEvent != null)
                 {
-                    DS4Windows.Global.Save();
-                }
-
-                exitComThread = true;
-                if (threadComEvent != null)
-                {
-                    threadComEvent.Set();  // signal the other instance.
+                    ThreadComEvent.Set();  // signal the other instance.
                     while (testThread.IsAlive)
                         Thread.SpinWait(500);
-                    threadComEvent.Close();
+                    ThreadComEvent.Close();
                 }
 
                 if (ipcClassNameMMA != null) ipcClassNameMMA.Dispose();

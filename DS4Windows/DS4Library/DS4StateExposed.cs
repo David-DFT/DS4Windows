@@ -45,16 +45,16 @@ namespace DS4Windows
 
         public int Battery => _state.Battery;
 
-        public int GyroYaw => _state.Motion.gyroYaw;
-        public int GyroPitch => _state.Motion.gyroPitch;
-        public int GyroRoll => _state.Motion.gyroRoll;
+        public int GyroYaw => _state.Motion.GyroYaw;
+        public int GyroPitch => _state.Motion.GyroPitch;
+        public int GyroRoll => _state.Motion.GyroRoll;
 
-        public int AccelX => _state.Motion.accelX;
-        public int AccelY => _state.Motion.accelY;
-        public int AccelZ => _state.Motion.accelZ;
+        public int AccelX => _state.Motion.AccelX;
+        public int AccelY => _state.Motion.AccelY;
+        public int AccelZ => _state.Motion.AccelZ;
 
-        public int OutputAccelX => _state.Motion.outputAccelX;
-        public int OutputAccelY => _state.Motion.outputAccelY;
-        public int OutputAccelZ => _state.Motion.outputAccelZ;
+        public int OutputAccelX => _state.Motion.OutputAccelX;
+        public int OutputAccelY => _state.Motion.OutputAccelY;
+        public int OutputAccelZ => _state.Motion.OutputAccelZ;
     }
 }

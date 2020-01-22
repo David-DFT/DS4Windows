@@ -10,7 +10,7 @@ namespace DS4WinWPF
     public static class StartupMethods
     {
         public static string lnkpath = Environment.GetFolderPath(Environment.SpecialFolder.Startup) + "\\DS4Windows.lnk";
-        private static string taskBatPath = Path.Combine(DS4Windows.Global.exedirpath, "task.bat");
+        private static string taskBatPath = Path.Combine(DS4Windows.Global.ExeDirectoryPath, "task.bat");
 
         public static bool HasStartProgEntry()
         {
@@ -39,8 +39,8 @@ namespace DS4WinWPF
                 var lnk = shell.CreateShortcut(lnkpath);
                 try
                 {
-                    string app = DS4Windows.Global.exelocation;
-                    lnk.TargetPath = DS4Windows.Global.exelocation;
+                    string app = DS4Windows.Global.ExeLocation;
+                    lnk.TargetPath = DS4Windows.Global.ExeLocation;
                     lnk.Arguments = "-m";
 
                     //lnk.TargetPath = Assembly.GetExecutingAssembly().Location;
@@ -105,7 +105,7 @@ namespace DS4WinWPF
             TaskService ts = new TaskService();
             TaskDefinition td = ts.NewTask();
             td.Triggers.Add(new LogonTrigger());
-            string dir = DS4Windows.Global.exedirpath;
+            string dir = DS4Windows.Global.ExeDirectoryPath;
             td.Actions.Add(new ExecAction($@"{dir}\task.bat",
                 "",
                 dir));
@@ -127,7 +127,7 @@ namespace DS4WinWPF
         public static bool CheckStartupExeLocation()
         {
             string lnkprogpath = ResolveShortcut(lnkpath);
-            return lnkprogpath != DS4Windows.Global.exelocation;
+            return lnkprogpath != DS4Windows.Global.ExeLocation;
         }
 
         public static void LaunchOldTask()

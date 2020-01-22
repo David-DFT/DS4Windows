@@ -161,11 +161,11 @@ namespace DS4Windows
 
         private static void StartHidGuardian()
         {
-            ProcessStartInfo startInfo = new ProcessStartInfo(exedirpath + "\\HidGuardHelper.exe")
+            ProcessStartInfo startInfo = new ProcessStartInfo(ExeDirectoryPath + "\\HidGuardHelper.exe")
             {
                 Verb = "runas",
                 Arguments = Process.GetCurrentProcess().Id.ToString(),
-                WorkingDirectory = exedirpath
+                WorkingDirectory = ExeDirectoryPath
             };
 
             try
@@ -219,7 +219,7 @@ namespace DS4Windows
             }
 
             meta.ConnectionType = (d.ConnectionType == ConnectionType.USB) ? DsConnection.Usb : DsConnection.Bluetooth;
-            meta.IsActive = !d.isDS4Idle();
+            meta.IsActive = !d.IsDS4Idle();
 
             if (d.IsCharging && d.Battery >= 100)
                 meta.BatteryStatus = DsBattery.Charged;
@@ -629,7 +629,7 @@ namespace DS4Windows
                 AppLogger.LogToTray(logMessage);
             }
 
-            runHotPlug = true;
+            RunHotPlug = true;
             ServiceStarted?.Invoke(this, EventArgs.Empty);
             RunningChanged?.Invoke(this, EventArgs.Empty);
             return true;
@@ -647,7 +647,7 @@ namespace DS4Windows
             if (Running)
             {
                 Running = false;
-                runHotPlug = false;
+                RunHotPlug = false;
                 PreServiceStop?.Invoke(this, EventArgs.Empty);
 
                 if (showlog)
@@ -675,7 +675,7 @@ namespace DS4Windows
                         }
                         else
                         {
-                            DS4LightBar.Forcelight[i] = false;
+                            DS4LightBar.ForceLight[i] = false;
                             DS4LightBar.ForcedFlash[i] = 0;
                             DS4LightBar.DefaultLight = true;
                             DS4LightBar.UpdateLightBar(tempDevice, i);
@@ -723,7 +723,7 @@ namespace DS4Windows
                 stopViGEm();
             }
 
-            runHotPlug = false;
+            RunHotPlug = false;
             ServiceStopped?.Invoke(this, EventArgs.Empty);
             RunningChanged?.Invoke(this, EventArgs.Empty);
             return true;
@@ -840,7 +840,7 @@ namespace DS4Windows
         {
             string profileLog;
 
-            if (File.Exists(appdatapath + "\\Profiles\\" + ProfilePath[profileIndex] + ".xml"))
+            if (File.Exists(AppDataPath + "\\Profiles\\" + ProfilePath[profileIndex] + ".xml"))
                 profileLog = DS4WinWPF.Properties.Resources.UsingProfile.Replace("*number*", (profileIndex + 1).ToString()).Replace("*Profile name*", ProfilePath[profileIndex]);
             else
                 profileLog = DS4WinWPF.Properties.Resources.NotUsingProfile.Replace("*number*", (profileIndex + 1).ToString());
@@ -1290,7 +1290,7 @@ namespace DS4Windows
 
                 if (!RecordMacro && (UseTempProfile[ind] ||
                     containsCustomAction(ind) || containsCustomExtras(ind) ||
-                    getProfileActionCount(ind) > 0 ||
+                    GetProfileActionCount(ind) > 0 ||
                     GetSASteeringWheelEmulationAxis(ind) >= SASteeringWheelEmulationAxisType.VJoy1X))
                 {
                     Mapping.MapCustom(ind, cState, Controllers[ind].MappedState, Controllers[ind].ExposedState, Controllers[ind].TouchPad, this);
@@ -1363,14 +1363,14 @@ namespace DS4Windows
                     DS4Color color = new DS4Color { Red = 50, Green = 0, Blue = 0 };
                     DS4LightBar.ForcedColor[ind] = color;
                     DS4LightBar.ForcedFlash[ind] = 2;
-                    DS4LightBar.Forcelight[ind] = true;
+                    DS4LightBar.ForceLight[ind] = true;
                 }
             }
             else
             {
                 lag[ind] = false;
                 LogDebug(DS4WinWPF.Properties.Resources.LatencyNotOverTen.Replace("*number*", (ind + 1).ToString()));
-                DS4LightBar.Forcelight[ind] = false;
+                DS4LightBar.ForceLight[ind] = false;
                 DS4LightBar.ForcedFlash[ind] = 0;
             }
         }
@@ -1394,13 +1394,13 @@ namespace DS4Windows
                     result = DS4Controls.Square;
                 else if (Mapping.getBoolButtonMapping(cState.L1))
                     result = DS4Controls.L1;
-                else if (Mapping.getBoolTriggerMapping(cState.L2))
+                else if (Mapping.GetBoolTriggerMapping(cState.L2))
                     result = DS4Controls.L2;
                 else if (Mapping.getBoolButtonMapping(cState.L3))
                     result = DS4Controls.L3;
                 else if (Mapping.getBoolButtonMapping(cState.R1))
                     result = DS4Controls.R1;
-                else if (Mapping.getBoolTriggerMapping(cState.R2))
+                else if (Mapping.GetBoolTriggerMapping(cState.R2))
                     result = DS4Controls.R2;
                 else if (Mapping.getBoolButtonMapping(cState.R3))
                     result = DS4Controls.R3;
@@ -1434,13 +1434,13 @@ namespace DS4Windows
                     result = DS4Controls.RYPos;
                 else if (Mapping.getBoolAxisDirMapping(cState.RY, false))
                     result = DS4Controls.RYNeg;
-                else if (Mapping.getBoolTouchMapping(tp.leftDown))
+                else if (Mapping.GetBoolTouchMapping(tp.leftDown))
                     result = DS4Controls.TouchLeft;
-                else if (Mapping.getBoolTouchMapping(tp.rightDown))
+                else if (Mapping.GetBoolTouchMapping(tp.rightDown))
                     result = DS4Controls.TouchRight;
-                else if (Mapping.getBoolTouchMapping(tp.multiDown))
+                else if (Mapping.GetBoolTouchMapping(tp.multiDown))
                     result = DS4Controls.TouchMulti;
-                else if (Mapping.getBoolTouchMapping(tp.upperDown))
+                else if (Mapping.GetBoolTouchMapping(tp.upperDown))
                     result = DS4Controls.TouchUpper;
             }
 

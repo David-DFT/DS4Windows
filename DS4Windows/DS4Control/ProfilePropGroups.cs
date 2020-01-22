@@ -2,26 +2,26 @@
 {
     public class SquareStickInfo
     {
-        public bool lsMode;
-        public bool rsMode;
-        public double lsRoundness = 5.0;
-        public double rsRoundness = 5.0;
+        public bool LsMode;
+        public bool RsMode;
+        public double LsRoundness = 5.0;
+        public double RsRoundness = 5.0;
     }
 
     public class StickDeadZoneInfo
     {
-        public int deadZone;
-        public int antiDeadZone;
-        public int maxZone = 100;
-        public double maxOutput = 100.0;
+        public int DeadZone;
+        public int AntiDeadZone;
+        public int MaxZone = 100;
+        public double MaxOutput = 100.0;
     }
 
     public class TriggerDeadZoneZInfo
     {
-        public byte deadZone; // Trigger deadzone is expressed in axis units
-        public int antiDeadZone;
-        public int maxZone = 100;
-        public double maxOutput = 100.0;
+        public byte DeadZone;// Trigger deadzone is expressed in axis units
+        public int AntiDeadZone;
+        public int MaxZone = 100;
+        public double MaxOutput = 100.0;
     }
 
     public class GyroMouseInfo
@@ -31,14 +31,14 @@
 
     public class GyroMouseStickInfo
     {
-        public int deadZone;
-        public int maxZone;
-        public double antiDeadX;
-        public double antiDeadY;
-        public int vertScale;
+        public int DeadZone;
+        public int MaxZone;
+        public double AntiDeadX;
+        public double AntiDeadY;
+        public int VertScale;
         // Flags representing invert axis choices
-        public uint inverted;
-        public bool useSmoothing;
-        public double smoothWeight;
+        public uint Inverted;
+        public bool UseSmoothing;
+        public double SmoothWeight;
     }
 }

@@ -12,99 +12,75 @@ namespace DS4WinWPF.DS4Forms.ViewModels
 {
     public class RecordBoxViewModel
     {
-        private Stopwatch sw = new Stopwatch();
-        private int deviceNum;
-        public int DeviceNum { get => deviceNum; }
+        public int DeviceNum { get; }
+        public DS4ControlSettings Settings { get; }
+        public bool Shift { get; }
+        public bool RecordDelays { get; set; }
+        public int MacroModeIndex { get; set; }
+        public bool Recording { get; set; }
+        public bool ToggleLightbar { get; set; }
+        public bool ToggleRumble { get; set; }
 
-        private DS4ControlSettings settings;
-        public DS4ControlSettings Settings { get => settings; }
+        private readonly object macroStepsLock = new object();
+        public ObservableCollection<MacroStepItem> MacroSteps { get; } = new ObservableCollection<MacroStepItem>();
 
-        private bool shift;
-        public bool Shift { get => shift; }
-
-        private bool recordDelays;
-        public bool RecordDelays { get => recordDelays; set => recordDelays = value; }
-
-        private int macroModeIndex;
-        public int MacroModeIndex { get => macroModeIndex; set => macroModeIndex = value; }
-
-        private bool recording;
-        public bool Recording { get => recording; set => recording = value; }
-
-        private bool toggleLightbar;
-        public bool ToggleLightbar { get => toggleLightbar; set => toggleLightbar = value; }
-
-        private bool toggleRummble;
-        public bool ToggleRumble { get => toggleRummble; set => toggleRummble = value; }
-
-        private bool toggle4thMouse;
-        private bool toggle5thMouse;
-        private int appendIndex = -1;
-
-        private object _colLockobj = new object();
-        private ObservableCollection<MacroStepItem> macroSteps =
-            new ObservableCollection<MacroStepItem>();
-        public ObservableCollection<MacroStepItem> MacroSteps { get => macroSteps; }
-        
         private int macroStepIndex;
         public int MacroStepIndex
         {
             get => macroStepIndex;
             set
             {
-                if (macroStepIndex == value) return;
+                if (macroStepIndex == value)
+                    return;
+
                 macroStepIndex = value;
                 MacroStepIndexChanged?.Invoke(this, EventArgs.Empty);
             }
         }
+
         public event EventHandler MacroStepIndexChanged;
-        public Stopwatch Sw { get => sw; }
-        public bool Toggle4thMouse { get => toggle4thMouse; set => toggle4thMouse = value; }
-        public bool Toggle5thMouse { get => toggle5thMouse; set => toggle5thMouse = value; }
-        public int AppendIndex { get => appendIndex; set => appendIndex = value; }
-        public int EditMacroIndex { get => editMacroIndex; set => editMacroIndex = value; }
-        public Dictionary<int, bool> KeysdownMap { get => keysdownMap; }
-        public bool UseScanCode { get => useScanCode; set => useScanCode = value; }
-
-        private int editMacroIndex = -1;
-        private Dictionary<int, bool> keysdownMap = new Dictionary<int, bool>();
-
-        private bool useScanCode;
-
+        public Stopwatch Stopwatch { get; } = new Stopwatch();
+        public bool Toggle4thMouse { get; set; }
+        public bool Toggle5thMouse { get; set; }
+        public int AppendIndex { get; set; } = -1;
+        public int EditMacroIndex { get; set; } = -1;
+        public Dictionary<int, bool> KeysdownMap { get; } = new Dictionary<int, bool>();
+        public bool UseScanCode { get; set; }
 
         public RecordBoxViewModel(int deviceNum, DS4ControlSettings controlSettings, bool shift)
         {
-            this.deviceNum = deviceNum;
-            settings = controlSettings;
-            this.shift = shift;
-            if (!shift && settings.keyType.HasFlag(DS4KeyType.HoldMacro))
+            DeviceNum = deviceNum;
+            Settings = controlSettings;
+            Shift = shift;
+
+            if (!shift && Settings.keyType.HasFlag(DS4KeyType.HoldMacro))
             {
-                macroModeIndex = 1;
+                MacroModeIndex = 1;
             }
-            else if (shift && settings.shiftKeyType.HasFlag(DS4KeyType.HoldMacro))
+            else if (shift && Settings.shiftKeyType.HasFlag(DS4KeyType.HoldMacro))
             {
-                macroModeIndex = 1;
+                MacroModeIndex = 1;
             }
 
-            if (!shift && settings.keyType.HasFlag(DS4KeyType.ScanCode))
+            if (!shift && Settings.keyType.HasFlag(DS4KeyType.ScanCode))
             {
-                useScanCode = true;
+                UseScanCode = true;
             }
-            else if (shift && settings.shiftKeyType.HasFlag(DS4KeyType.ScanCode))
+            else if (shift && Settings.shiftKeyType.HasFlag(DS4KeyType.ScanCode))
             {
-                useScanCode = true;
+                UseScanCode = true;
             }
 
-            if (!shift && settings.action is int[])
+            if (!shift && Settings.Action is int[])
             {
                 LoadMacro();
             }
-            else if (shift && settings.shiftAction is int[])
+            else if (shift && Settings.ShiftAction is int[])
             {
                 LoadMacro();
             }
 
-            BindingOperations.EnableCollectionSynchronization(macroSteps, _colLockobj);
+            BindingOperations.EnableCollectionSynchronization(MacroSteps, macroStepsLock);
             
             // By default RECORD button appends new steps. User must select (click) an existing step to insert new steps in front of the selected step
             MacroStepIndex = -1;
@@ -113,13 +89,13 @@ namespace DS4WinWPF.DS4Forms.ViewModels
         public void LoadMacro()
         {
             int[] macro;
-            if (!shift)
+            if (!Shift)
             {
-                macro = (int[])settings.action;
+                macro = (int[])Settings.Action;
             }
             else
             {
-                macro = (int[])settings.shiftAction;
+                macro = (int[])Settings.ShiftAction;
             }
 
             MacroParser macroParser = new MacroParser(macro);
@@ -127,46 +103,46 @@ namespace DS4WinWPF.DS4Forms.ViewModels
             foreach(MacroStep step in macroParser.MacroSteps)
             {
                 MacroStepItem item = new MacroStepItem(step);
-                macroSteps.Add(item);
+                MacroSteps.Add(item);
             }
         }
 
         public void ExportMacro()
         {
-            int[] outmac = new int[macroSteps.Count];
+            int[] outmac = new int[MacroSteps.Count];
             int index = 0;
-            foreach(MacroStepItem step in macroSteps)
+            foreach(MacroStepItem step in MacroSteps)
             {
                 outmac[index] = step.Step.Value;
                 index++;
             }
 
-            if (!shift)
+            if (!Shift)
             {
-                settings.action = outmac;
-                settings.actionType = DS4ControlSettings.ActionType.Macro;
-                settings.keyType = DS4KeyType.Macro;
-                if (macroModeIndex == 1)
+                Settings.Action = outmac;
+                Settings.ActionType = DS4ControlSettings.EActionType.Macro;
+                Settings.keyType = DS4KeyType.Macro;
+                if (MacroModeIndex == 1)
                 {
-                    settings.keyType |= DS4KeyType.HoldMacro;
+                    Settings.keyType |= DS4KeyType.HoldMacro;
                 }
-                if (useScanCode)
+                if (UseScanCode)
                 {
-                    settings.keyType |= DS4KeyType.ScanCode;
+                    Settings.keyType |= DS4KeyType.ScanCode;
                 }
             }
             else
             {
-                settings.shiftAction = outmac;
-                settings.shiftActionType = DS4ControlSettings.ActionType.Macro;
-                settings.shiftKeyType = DS4KeyType.Macro;
-                if (macroModeIndex == 1)
+                Settings.ShiftAction = outmac;
+                Settings.shiftActionType = DS4ControlSettings.EActionType.Macro;
+                Settings.shiftKeyType = DS4KeyType.Macro;
+                if (MacroModeIndex == 1)
                 {
-                    settings.shiftKeyType |= DS4KeyType.HoldMacro;
+                    Settings.shiftKeyType |= DS4KeyType.HoldMacro;
                 }
-                if (useScanCode)
+                if (UseScanCode)
                 {
-                    settings.shiftKeyType |= DS4KeyType.ScanCode;
+                    Settings.shiftKeyType |= DS4KeyType.ScanCode;
                 }
             }
         }
@@ -175,23 +151,23 @@ namespace DS4WinWPF.DS4Forms.ViewModels
         {
             MacroStep step = new MacroStep(18, KeyInterop.KeyFromVirtualKey(18).ToString(),
                 MacroStep.StepType.ActDown, MacroStep.StepOutput.Key);
-            macroSteps.Add(new MacroStepItem(step));
+            MacroSteps.Add(new MacroStepItem(step));
 
             step = new MacroStep(9, KeyInterop.KeyFromVirtualKey(9).ToString(),
                 MacroStep.StepType.ActDown, MacroStep.StepOutput.Key);
-            macroSteps.Add(new MacroStepItem(step));
+            MacroSteps.Add(new MacroStepItem(step));
 
             step = new MacroStep(9, KeyInterop.KeyFromVirtualKey(9).ToString(),
                 MacroStep.StepType.ActUp, MacroStep.StepOutput.Key);
-            macroSteps.Add(new MacroStepItem(step));
+            MacroSteps.Add(new MacroStepItem(step));
 
             step = new MacroStep(18, KeyInterop.KeyFromVirtualKey(18).ToString(),
                 MacroStep.StepType.ActUp, MacroStep.StepOutput.Key);
-            macroSteps.Add(new MacroStepItem(step));
+            MacroSteps.Add(new MacroStepItem(step));
 
             step = new MacroStep(1300, $"Wait 1000ms",
                 MacroStep.StepType.Wait, MacroStep.StepOutput.None);
-            macroSteps.Add(new MacroStepItem(step));
+            MacroSteps.Add(new MacroStepItem(step));
         }
 
         public void LoadPresetFromFile(string filepath)
@@ -210,15 +186,15 @@ namespace DS4WinWPF.DS4Forms.ViewModels
             foreach (MacroStep step in macroParser.MacroSteps)
             {
                 MacroStepItem item = new MacroStepItem(step);
-                macroSteps.Add(item);
+                MacroSteps.Add(item);
             }
         }
 
         public void SavePreset(string filepath)
         {
-            int[] outmac = new int[macroSteps.Count];
+            int[] outmac = new int[MacroSteps.Count];
             int index = 0;
-            foreach (MacroStepItem step in macroSteps)
+            foreach (MacroStepItem step in MacroSteps)
             {
                 outmac[index] = step.Step.Value;
                 index++;
@@ -232,65 +208,64 @@ namespace DS4WinWPF.DS4Forms.ViewModels
 
         public void AddMacroStep(MacroStep step)
         {
-            if (recordDelays && macroSteps.Count > 0)
+            if (RecordDelays && MacroSteps.Count > 0)
             {
-                int elapsed = (int)sw.ElapsedMilliseconds + 300;
-                MacroStep waitstep = new MacroStep(elapsed, $"Wait {elapsed - 300}ms",
-                    MacroStep.StepType.Wait, MacroStep.StepOutput.None);
+                int elapsed = (int)Stopwatch.ElapsedMilliseconds + 300;
+                MacroStep waitstep = new MacroStep(elapsed, $"Wait {elapsed - 300}ms", MacroStep.StepType.Wait, MacroStep.StepOutput.None);
                 MacroStepItem waititem = new MacroStepItem(waitstep);
-                if (appendIndex == -1)
+                if (AppendIndex == -1)
                 {
-                    macroSteps.Add(waititem);
+                    MacroSteps.Add(waititem);
                 }
                 else
                 {
-                    macroSteps.Insert(appendIndex, waititem);
-                    appendIndex++;
+                    MacroSteps.Insert(AppendIndex, waititem);
+                    AppendIndex++;
                 }
             }
 
-            sw.Restart();
+            Stopwatch.Restart();
             MacroStepItem item = new MacroStepItem(step);
-            if (appendIndex == -1)
+            if (AppendIndex == -1)
             {
-                macroSteps.Add(item);
+                MacroSteps.Add(item);
             }
             else
             {
-                macroSteps.Insert(appendIndex, item);
-                appendIndex++;
+                MacroSteps.Insert(AppendIndex, item);
+                AppendIndex++;
             }
         }
 
         public void StartForcedColor(Color color)
         {
-            if (deviceNum < 4)
+            if (DeviceNum < 4)
             {
                 DS4Color dcolor = new DS4Color() { Red = color.R, Green = color.G, Blue = color.B };
-                DS4LightBar.ForcedColor[deviceNum] = dcolor;
-                DS4LightBar.ForcedFlash[deviceNum] = 0;
-                DS4LightBar.Forcelight[deviceNum] = true;
+                DS4LightBar.ForcedColor[DeviceNum] = dcolor;
+                DS4LightBar.ForcedFlash[DeviceNum] = 0;
+                DS4LightBar.ForceLight[DeviceNum] = true;
             }
         }
 
         public void EndForcedColor()
         {
-            if (deviceNum < 4)
+            if (DeviceNum < 4)
             {
-                DS4LightBar.ForcedColor[deviceNum] = new DS4Color(0, 0, 0);
-                DS4LightBar.ForcedFlash[deviceNum] = 0;
-                DS4LightBar.Forcelight[deviceNum] = false;
+                DS4LightBar.ForcedColor[DeviceNum] = new DS4Color(0, 0, 0);
+                DS4LightBar.ForcedFlash[DeviceNum] = 0;
+                DS4LightBar.ForceLight[DeviceNum] = false;
             }
         }
 
         public void UpdateForcedColor(Color color)
         {
-            if (deviceNum < 4)
+            if (DeviceNum < 4)
             {
                 DS4Color dcolor = new DS4Color() { Red = color.R, Green = color.G, Blue = color.B };
-                DS4LightBar.ForcedColor[deviceNum] = dcolor;
-                DS4LightBar.ForcedFlash[deviceNum] = 0;
-                DS4LightBar.Forcelight[deviceNum] = true;
+                DS4LightBar.ForcedColor[DeviceNum] = dcolor;
+                DS4LightBar.ForcedFlash[DeviceNum] = 0;
+                DS4LightBar.ForceLight[DeviceNum] = true;
             }
         }
 
@@ -305,25 +280,23 @@ namespace DS4WinWPF.DS4Forms.ViewModels
             {
                 // Ignore Touch controls
                 if (dc >= DS4Controls.TouchLeft && dc <= DS4Controls.TouchRight)
-                {
                     continue;
-                }
-
+                
                 int macroValue = Global.MacroDS4Values[dc];
-                keysdownMap.TryGetValue(macroValue, out bool isdown);
-                if (!isdown && Mapping.getBoolMapping(0, dc, cState, null, null))
+                KeysdownMap.TryGetValue(macroValue, out bool isdown);
+                if (!isdown && Mapping.GetBoolMapping(0, dc, cState, null, null))
                 {
                     MacroStep step = new MacroStep(macroValue, MacroParser.macroInputNames[macroValue],
                             MacroStep.StepType.ActDown, MacroStep.StepOutput.Button);
                     AddMacroStep(step);
-                    keysdownMap.Add(macroValue, true);
+                    KeysdownMap.Add(macroValue, true);
                 }
-                else if (isdown && !Mapping.getBoolMapping(0, dc, cState, null, null))
+                else if (isdown && !Mapping.GetBoolMapping(0, dc, cState, null, null))
                 {
                     MacroStep step = new MacroStep(macroValue, MacroParser.macroInputNames[macroValue],
                             MacroStep.StepType.ActUp, MacroStep.StepOutput.Button);
                     AddMacroStep(step);
-                    keysdownMap.Remove(macroValue);
+                    KeysdownMap.Remove(macroValue);
                 }
             }
         }
@@ -338,17 +311,14 @@ namespace DS4WinWPF.DS4Forms.ViewModels
             "/DS4Windows;component/Resources/clock.png",
         };
 
-        private MacroStep step;
-        private string image;
-
-        public string Image { get => image; }
-        public MacroStep Step { get => step; }
+        public string Image { get; }
+        public MacroStep Step { get; }
         public int DisplayValue
         {
             get
             {
-                int result = step.Value;
-                if (step.ActType == MacroStep.StepType.Wait)
+                int result = Step.Value;
+                if (Step.ActType == MacroStep.StepType.Wait)
                 {
                     result -= 300;
                 }
@@ -358,12 +328,12 @@ namespace DS4WinWPF.DS4Forms.ViewModels
             set
             {
                 int result = value;
-                if (step.ActType == MacroStep.StepType.Wait)
+                if (Step.ActType == MacroStep.StepType.Wait)
                 {
                     result += 300;
                 }
 
-                step.Value = result;
+                Step.Value = result;
             }
         }
 
@@ -371,7 +341,7 @@ namespace DS4WinWPF.DS4Forms.ViewModels
         {
             get
             {
-                int result = step.Value;
+                int result = Step.Value;
                 result -= 1000000;
                 string temp = result.ToString();
                 result = int.Parse(temp.Substring(0, 3));
@@ -379,12 +349,12 @@ namespace DS4WinWPF.DS4Forms.ViewModels
             }
             set
             {
-                int result = step.Value;
+                int result = Step.Value;
                 result -= 1000000;
                 int curHeavy = result / 1000;
                 int curLight = result - (curHeavy * 1000);
                 result = curLight + (value * 1000) + 1000000;
-                step.Value = result;
+                Step.Value = result;
             }
         }
 
@@ -392,7 +362,7 @@ namespace DS4WinWPF.DS4Forms.ViewModels
         {
             get
             {
-                int result = step.Value;
+                int result = Step.Value;
                 result -= 1000000;
                 string temp = result.ToString();
                 result = int.Parse(temp.Substring(3, 3));
@@ -400,28 +370,28 @@ namespace DS4WinWPF.DS4Forms.ViewModels
             }
             set
             {
-                int result = step.Value;
+                int result = Step.Value;
                 result -= 1000000;
                 int curHeavy = result / 1000;
                 result = value + (curHeavy * 1000) + 1000000;
-                step.Value = result;
+                Step.Value = result;
             }
         }
 
         public MacroStepItem(MacroStep step)
         {
-            this.step = step;
-            image = imageSources[(int)step.ActType];
+            Step = step;
+            Image = imageSources[(int)step.ActType];
         }
 
         public void UpdateLightbarValue(Color color)
         {
-            step.Value = 1000000000 + (color.R*1000000)+(color.G*1000)+color.B;
+            Step.Value = 1000000000 + (color.R*1000000)+(color.G*1000)+color.B;
         }
 
         public Color LightbarColorValue()
         {
-            int temp = step.Value - 1000000000;
+            int temp = Step.Value - 1000000000;
             int r = temp / 1000000;
             temp -= (r * 1000000);
             int g = temp / 1000;

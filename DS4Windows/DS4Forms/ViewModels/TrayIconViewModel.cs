@@ -15,7 +15,7 @@ namespace DS4WinWPF.DS4Forms.ViewModels
         public const string ICON_WHITE = "/DS4Windows;component/Resources/DS4W - White.ico";
         private string iconSource = ICON_COLOR;
         public const string ballonTitle = "DS4Windows";
-        public static string trayTitle = $"DS4Windows v{Global.exeversion}";
+        public static string trayTitle = $"DS4Windows v{Global.ExeVersion}";
         private ContextMenu contextMenu;
         private MenuItem changeServiceItem;
         private MenuItem openItem;
@@ -221,7 +221,7 @@ namespace DS4WinWPF.DS4Forms.ViewModels
 
         private void OpenProgramFolderItem_Click(object sender, System.Windows.RoutedEventArgs e)
         {
-            Process.Start(Global.exedirpath);
+            Process.Start(Global.ExeDirectoryPath);
         }
 
         private void OpenMenuItem_Click(object sender, System.Windows.RoutedEventArgs e)

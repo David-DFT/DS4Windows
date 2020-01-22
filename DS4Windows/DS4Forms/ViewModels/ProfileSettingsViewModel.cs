@@ -517,7 +517,7 @@ namespace DS4WinWPF.DS4Forms.ViewModels
             get => tempControllerIndex; set
             {
                 tempControllerIndex = value;
-                Global.outDevTypeTemp[device] = TempConType;
+                Global.OutDevTypeTemp[device] = TempConType;
             }
         }
 
@@ -632,12 +632,12 @@ namespace DS4WinWPF.DS4Forms.ViewModels
 
         public double LSDeadZone
         {
-            get => Global.LSModInfo[device].deadZone / 127d;
+            get => Global.LSModInfo[device].DeadZone / 127d;
             set
             {
-                double temp = Global.LSModInfo[device].deadZone / 127d;
+                double temp = Global.LSModInfo[device].DeadZone / 127d;
                 if (temp == value) return;
-                Global.LSModInfo[device].deadZone = (int)(value * 127d);
+                Global.LSModInfo[device].DeadZone = (int)(value * 127d);
                 LSDeadZoneChanged?.Invoke(this, EventArgs.Empty);
             }
         }
@@ -645,12 +645,12 @@ namespace DS4WinWPF.DS4Forms.ViewModels
 
         public double RSDeadZone
         {
-            get => Global.RSModInfo[device].deadZone / 127d;
+            get => Global.RSModInfo[device].DeadZone / 127d;
             set
             {
-                double temp = Global.RSModInfo[device].deadZone / 127d;
+                double temp = Global.RSModInfo[device].DeadZone / 127d;
                 if (temp == value) return;
-                Global.RSModInfo[device].deadZone = (int)(value * 127d);
+                Global.RSModInfo[device].DeadZone = (int)(value * 127d);
                 RSDeadZoneChanged?.Invoke(this, EventArgs.Empty);
             }
         }
@@ -658,38 +658,38 @@ namespace DS4WinWPF.DS4Forms.ViewModels
 
         public double LSMaxZone
         {
-            get => Global.LSModInfo[device].maxZone / 100.0;
-            set => Global.LSModInfo[device].maxZone = (int)(value * 100.0);
+            get => Global.LSModInfo[device].MaxZone / 100.0;
+            set => Global.LSModInfo[device].MaxZone = (int)(value * 100.0);
         }
 
         public double RSMaxZone
         {
-            get => Global.RSModInfo[device].maxZone / 100.0;
-            set => Global.RSModInfo[device].maxZone = (int)(value * 100.0);
+            get => Global.RSModInfo[device].MaxZone / 100.0;
+            set => Global.RSModInfo[device].MaxZone = (int)(value * 100.0);
         }
 
         public double LSAntiDeadZone
         {
-            get => Global.LSModInfo[device].antiDeadZone / 100.0;
-            set => Global.LSModInfo[device].antiDeadZone = (int)(value * 100.0);
+            get => Global.LSModInfo[device].AntiDeadZone / 100.0;
+            set => Global.LSModInfo[device].AntiDeadZone = (int)(value * 100.0);
         }
 
         public double RSAntiDeadZone
         {
-            get => Global.RSModInfo[device].antiDeadZone / 100.0;
-            set => Global.RSModInfo[device].antiDeadZone = (int)(value * 100.0);
+            get => Global.RSModInfo[device].AntiDeadZone / 100.0;
+            set => Global.RSModInfo[device].AntiDeadZone = (int)(value * 100.0);
         }
 
         public double LSMaxOutput
         {
-            get => Global.LSModInfo[device].maxOutput / 100.0;
-            set => Global.LSModInfo[device].maxOutput = value * 100.0;
+            get => Global.LSModInfo[device].MaxOutput / 100.0;
+            set => Global.LSModInfo[device].MaxOutput = value * 100.0;
         }
 
         public double RSMaxOutput
         {
-            get => Global.RSModInfo[device].maxOutput / 100.0;
-            set => Global.RSModInfo[device].maxOutput = value * 100.0;
+            get => Global.RSModInfo[device].MaxOutput / 100.0;
+            set => Global.RSModInfo[device].MaxOutput = value * 100.0;
         }
 
         public double LSSens
@@ -706,31 +706,31 @@ namespace DS4WinWPF.DS4Forms.ViewModels
 
         public bool LSSquareStick
         {
-            get => Global.SquStickInfo[device].lsMode;
-            set => Global.SquStickInfo[device].lsMode = value;
+            get => Global.SquStickInfo[device].LsMode;
+            set => Global.SquStickInfo[device].LsMode = value;
         }
 
         public bool RSSquareStick
         {
-            get => Global.SquStickInfo[device].rsMode;
-            set => Global.SquStickInfo[device].rsMode = value;
+            get => Global.SquStickInfo[device].RsMode;
+            set => Global.SquStickInfo[device].RsMode = value;
         }
 
         public double LSSquareRoundness
         {
-            get => Global.SquStickInfo[device].lsRoundness;
-            set => Global.SquStickInfo[device].lsRoundness = value;
+            get => Global.SquStickInfo[device].LsRoundness;
+            set => Global.SquStickInfo[device].LsRoundness = value;
         }
 
         public double RSSquareRoundness
         {
-            get => Global.SquStickInfo[device].rsRoundness;
-            set => Global.SquStickInfo[device].rsRoundness = value;
+            get => Global.SquStickInfo[device].RsRoundness;
+            set => Global.SquStickInfo[device].RsRoundness = value;
         }
 
         public int LSOutputCurveIndex
         {
-            get => Global.getLsOutCurveMode(device);
+            get => Global.GetLsOutCurveMode(device);
             set
             {
                 Global.setLsOutCurveMode(device, value);
@@ -740,7 +740,7 @@ namespace DS4WinWPF.DS4Forms.ViewModels
 
         public int RSOutputCurveIndex
         {
-            get => Global.getRsOutCurveMode(device);
+            get => Global.GetRsOutCurveMode(device);
             set
             {
                 Global.setRsOutCurveMode(device, value);
@@ -774,13 +774,13 @@ namespace DS4WinWPF.DS4Forms.ViewModels
 
         public bool LSCustomCurveSelected
         {
-            get => Global.getLsOutCurveMode(device) == 6;
+            get => Global.GetLsOutCurveMode(device) == 6;
         }
         public event EventHandler LSCustomCurveSelectedChanged;
 
         public bool RSCustomCurveSelected
         {
-            get => Global.getRsOutCurveMode(device) == 6;
+            get => Global.GetRsOutCurveMode(device) == 6;
         }
         public event EventHandler RSCustomCurveSelectedChanged;
 
@@ -798,12 +798,12 @@ namespace DS4WinWPF.DS4Forms.ViewModels
 
         public double L2DeadZone
         {
-            get => Global.L2ModInfo[device].deadZone / 255.0;
+            get => Global.L2ModInfo[device].DeadZone / 255.0;
             set
             {
-                double temp = Global.L2ModInfo[device].deadZone / 255.0;
+                double temp = Global.L2ModInfo[device].DeadZone / 255.0;
                 if (temp == value) return;
-                Global.L2ModInfo[device].deadZone = (byte)(value * 255.0);
+                Global.L2ModInfo[device].DeadZone = (byte)(value * 255.0);
                 L2DeadZoneChanged?.Invoke(this, EventArgs.Empty);
             }
         }
@@ -811,12 +811,12 @@ namespace DS4WinWPF.DS4Forms.ViewModels
 
         public double R2DeadZone
         {
-            get => Global.R2ModInfo[device].deadZone / 255.0;
+            get => Global.R2ModInfo[device].DeadZone / 255.0;
             set
             {
-                double temp = Global.R2ModInfo[device].deadZone / 255.0;
+                double temp = Global.R2ModInfo[device].DeadZone / 255.0;
                 if (temp == value) return;
-                Global.R2ModInfo[device].deadZone = (byte)(value * 255.0);
+                Global.R2ModInfo[device].DeadZone = (byte)(value * 255.0);
                 R2DeadZoneChanged?.Invoke(this, EventArgs.Empty);
             }
         }
@@ -824,38 +824,38 @@ namespace DS4WinWPF.DS4Forms.ViewModels
 
         public double L2MaxZone
         {
-            get => Global.L2ModInfo[device].maxZone / 100.0;
-            set => Global.L2ModInfo[device].maxZone = (int)(value * 100.0);
+            get => Global.L2ModInfo[device].MaxZone / 100.0;
+            set => Global.L2ModInfo[device].MaxZone = (int)(value * 100.0);
         }
 
         public double R2MaxZone
         {
-            get => Global.R2ModInfo[device].maxZone / 100.0;
-            set => Global.R2ModInfo[device].maxZone = (int)(value * 100.0);
+            get => Global.R2ModInfo[device].MaxZone / 100.0;
+            set => Global.R2ModInfo[device].MaxZone = (int)(value * 100.0);
         }
 
         public double L2AntiDeadZone
         {
-            get => Global.L2ModInfo[device].antiDeadZone / 100.0;
-            set => Global.L2ModInfo[device].antiDeadZone = (int)(value * 100.0);
+            get => Global.L2ModInfo[device].AntiDeadZone / 100.0;
+            set => Global.L2ModInfo[device].AntiDeadZone = (int)(value * 100.0);
         }
 
         public double R2AntiDeadZone
         {
-            get => Global.R2ModInfo[device].antiDeadZone / 100.0;
-            set => Global.R2ModInfo[device].antiDeadZone = (int)(value * 100.0);
+            get => Global.R2ModInfo[device].AntiDeadZone / 100.0;
+            set => Global.R2ModInfo[device].AntiDeadZone = (int)(value * 100.0);
         }
 
         public double L2MaxOutput
         {
-            get => Global.L2ModInfo[device].maxOutput / 100.0;
-            set => Global.L2ModInfo[device].maxOutput = value * 100.0;
+            get => Global.L2ModInfo[device].MaxOutput / 100.0;
+            set => Global.L2ModInfo[device].MaxOutput = value * 100.0;
         }
 
         public double R2MaxOutput
         {
-            get => Global.R2ModInfo[device].maxOutput / 100.0;
-            set => Global.R2ModInfo[device].maxOutput = value * 100.0;
+            get => Global.R2ModInfo[device].MaxOutput / 100.0;
+            set => Global.R2ModInfo[device].MaxOutput = value * 100.0;
         }
 
         public double L2Sens
@@ -872,7 +872,7 @@ namespace DS4WinWPF.DS4Forms.ViewModels
 
         public int L2OutputCurveIndex
         {
-            get => Global.getL2OutCurveMode(device);
+            get => Global.GetL2OutCurveMode(device);
             set
             {
                 Global.setL2OutCurveMode(device, value);
@@ -892,7 +892,7 @@ namespace DS4WinWPF.DS4Forms.ViewModels
 
         public bool L2CustomCurveSelected
         {
-            get => Global.getL2OutCurveMode(device) == 6;
+            get => Global.GetL2OutCurveMode(device) == 6;
         }
         public event EventHandler L2CustomCurveSelectedChanged;
 
@@ -978,7 +978,7 @@ namespace DS4WinWPF.DS4Forms.ViewModels
 
         public int SXOutputCurveIndex
         {
-            get => Global.getSXOutCurveMode(device);
+            get => Global.GetSXOutCurveMode(device);
             set
             {
                 Global.setSXOutCurveMode(device, value);
@@ -988,7 +988,7 @@ namespace DS4WinWPF.DS4Forms.ViewModels
 
         public int SZOutputCurveIndex
         {
-            get => Global.getSZOutCurveMode(device);
+            get => Global.GetSZOutCurveMode(device);
             set
             {
                 Global.setSZOutCurveMode(device, value);
@@ -998,13 +998,13 @@ namespace DS4WinWPF.DS4Forms.ViewModels
 
         public bool SXCustomCurveSelected
         {
-            get => Global.getSXOutCurveMode(device) == 6;
+            get => Global.GetSXOutCurveMode(device) == 6;
         }
         public event EventHandler SXCustomCurveSelectedChanged;
 
         public bool SZCustomCurveSelected
         {
-            get => Global.getSZOutCurveMode(device) == 6;
+            get => Global.GetSZOutCurveMode(device) == 6;
         }
         public event EventHandler SZCustomCurveSelectedChanged;
 
@@ -1277,32 +1277,32 @@ namespace DS4WinWPF.DS4Forms.ViewModels
 
         public int GyroMouseStickDeadZone
         {
-            get => Global.GyroMouseStickInf[device].deadZone;
-            set => Global.GyroMouseStickInf[device].deadZone = value;
+            get => Global.GyroMouseStickInf[device].DeadZone;
+            set => Global.GyroMouseStickInf[device].DeadZone = value;
         }
 
         public int GyroMouseStickMaxZone
         {
-            get => Global.GyroMouseStickInf[device].maxZone;
-            set => Global.GyroMouseStickInf[device].maxZone = value;
+            get => Global.GyroMouseStickInf[device].MaxZone;
+            set => Global.GyroMouseStickInf[device].MaxZone = value;
         }
 
         public double GyroMouseStickAntiDeadX
         {
-            get => Global.GyroMouseStickInf[device].antiDeadX;
-            set => Global.GyroMouseStickInf[device].antiDeadX = value;
+            get => Global.GyroMouseStickInf[device].AntiDeadX;
+            set => Global.GyroMouseStickInf[device].AntiDeadX = value;
         }
 
         public double GyroMouseStickAntiDeadY
         {
-            get => Global.GyroMouseStickInf[device].antiDeadY;
-            set => Global.GyroMouseStickInf[device].antiDeadY = value;
+            get => Global.GyroMouseStickInf[device].AntiDeadY;
+            set => Global.GyroMouseStickInf[device].AntiDeadY = value;
         }
 
         public int GyroMouseStickVertScale
         {
-            get => Global.GyroMouseStickInf[device].vertScale;
-            set => Global.GyroMouseStickInf[device].vertScale = value;
+            get => Global.GyroMouseStickInf[device].VertScale;
+            set => Global.GyroMouseStickInf[device].VertScale = value;
         }
 
         public int GyroMouseStickEvalCondIndex
@@ -1319,16 +1319,16 @@ namespace DS4WinWPF.DS4Forms.ViewModels
 
         public bool GyroMouseStickInvertX
         {
-            get => (Global.GyroMouseStickInf[device].inverted & 2) == 2;
+            get => (Global.GyroMouseStickInf[device].Inverted & 2) == 2;
             set
             {
                 if (value)
                 {
-                    Global.GyroMouseStickInf[device].inverted |= 2;
+                    Global.GyroMouseStickInf[device].Inverted |= 2;
                 }
                 else
                 {
-                    Global.GyroMouseStickInf[device].inverted &= 1;
+                    Global.GyroMouseStickInf[device].Inverted &= 1;
                 }
             }
         }
@@ -1351,14 +1351,14 @@ namespace DS4WinWPF.DS4Forms.ViewModels
 
         public bool GyroMouseStickSmooth
         {
-            get => Global.GyroMouseStickInf[device].useSmoothing;
-            set => Global.GyroMouseStickInf[device].useSmoothing = value;
+            get => Global.GyroMouseStickInf[device].UseSmoothing;
+            set => Global.GyroMouseStickInf[device].UseSmoothing = value;
         }
 
         public double GyroMousetickSmoothWeight
         {
-            get => Global.GyroMouseStickInf[device].smoothWeight;
-            set => Global.GyroMouseStickInf[device].smoothWeight = value;
+            get => Global.GyroMouseStickInf[device].SmoothWeight;
+            set => Global.GyroMouseStickInf[device].SmoothWeight = value;
         }
         
         private string touchDisInvertString = "None";
@@ -1405,7 +1405,7 @@ namespace DS4WinWPF.DS4Forms.ViewModels
             this.device = device;
             funcDevNum = device < 4 ? device : 0;
             tempControllerIndex = ControllerTypeIndex;
-            Global.outDevTypeTemp[device] = OutControllerType.X360;
+            Global.OutDevTypeTemp[device] = OutControllerType.X360;
             tempBtPollRate = Global.BTPollRate[device];
 
             ImageSourceConverter sourceConverter = new ImageSourceConverter();
@@ -1483,7 +1483,7 @@ namespace DS4WinWPF.DS4Forms.ViewModels
                 DS4Color dcolor = new DS4Color() { Red = color.R, Green = color.G, Blue = color.B };
                 DS4LightBar.ForcedColor[device] = dcolor;
                 DS4LightBar.ForcedFlash[device] = 0;
-                DS4LightBar.Forcelight[device] = true;
+                DS4LightBar.ForceLight[device] = true;
             }
         }
 
@@ -1494,7 +1494,7 @@ namespace DS4WinWPF.DS4Forms.ViewModels
                 DS4Color dcolor = new DS4Color() { Red = color.R, Green = color.G, Blue = color.B };
                 DS4LightBar.ForcedColor[device] = dcolor;
                 DS4LightBar.ForcedFlash[device] = 0;
-                DS4LightBar.Forcelight[device] = true;
+                DS4LightBar.ForceLight[device] = true;
             }
         }
 
@@ -1504,7 +1504,7 @@ namespace DS4WinWPF.DS4Forms.ViewModels
             {
                 DS4LightBar.ForcedColor[device] = new DS4Color(0, 0, 0);
                 DS4LightBar.ForcedFlash[device] = 0;
-                DS4LightBar.Forcelight[device] = false;
+                DS4LightBar.ForceLight[device] = false;
             }
         }
 
@@ -1781,21 +1781,21 @@ namespace DS4WinWPF.DS4Forms.ViewModels
 
                 // Launch custom bezier editor webapp using a default browser executable command or via a default shell command. The default shell exeution doesn't support query parameters.
                 if (!string.IsNullOrEmpty(defaultBrowserCmd))
-                    System.Diagnostics.Process.Start(defaultBrowserCmd, $"\"file:///{Global.exedirpath}\\BezierCurveEditor\\index.html?curve={customDefinition.Replace(" ", "")}\"");
+                    System.Diagnostics.Process.Start(defaultBrowserCmd, $"\"file:///{Global.ExeDirectoryPath}\\BezierCurveEditor\\index.html?curve={customDefinition.Replace(" ", "")}\"");
                 else
-                    System.Diagnostics.Process.Start($"{Global.exedirpath}\\BezierCurveEditor\\index.html");
+                    System.Diagnostics.Process.Start($"{Global.ExeDirectoryPath}\\BezierCurveEditor\\index.html");
 
             }
             catch (Exception ex)
             {
-                AppLogger.LogToGui($"ERROR. Failed to open {Global.exedirpath}\\BezierCurveEditor\\index.html web app. Check that the web file exits or launch it outside of DS4Windows application. {ex.Message}", true);
+                AppLogger.LogToGui($"ERROR. Failed to open {Global.ExeDirectoryPath}\\BezierCurveEditor\\index.html web app. Check that the web file exits or launch it outside of DS4Windows application. {ex.Message}", true);
             }
         }
 
         public void UpdateLateProperties()
         {
             tempControllerIndex = ControllerTypeIndex;
-            Global.outDevTypeTemp[device] = Global.OutContType[device];
+            Global.OutDevTypeTemp[device] = Global.OutContType[device];
             tempBtPollRate = Global.BTPollRate[device];
         }
     }

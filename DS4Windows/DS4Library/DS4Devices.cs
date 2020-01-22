@@ -189,11 +189,13 @@ namespace DS4Windows
                     {
                         // Launches an elevated child process to re-enable device
                         string exeName = Process.GetCurrentProcess().MainModule.FileName;
-                        ProcessStartInfo startInfo = new ProcessStartInfo(exeName);
-                        startInfo.Verb = "runas";
-                        startInfo.Arguments = "re-enabledevice " + DevicePathToInstanceId(hDevice.DevicePath);
-                        Process child = Process.Start(startInfo);
+                        ProcessStartInfo startInfo = new ProcessStartInfo(exeName)
+                        {
+                            Verb = "runas",
+                            Arguments = "re-enabledevice " + DevicePathToInstanceId(hDevice.DevicePath)
+                        };
 
+                        Process child = Process.Start(startInfo);
                         if (!child.WaitForExit(30000))
                         {
                             child.Kill();
@@ -275,7 +277,7 @@ namespace DS4Windows
                     if (Devices.ContainsKey(devPath))
                     {
                         DeviceSerials.Remove(serial);
-                        device.updateSerial();
+                        device.UpdateSerial();
                         serial = device.MacAddress;
                         if (DS4Device.IsValidSerial(serial))
                             DeviceSerials.Add(serial);

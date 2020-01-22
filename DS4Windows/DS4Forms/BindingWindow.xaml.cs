@@ -39,9 +39,9 @@ namespace DS4WinWPF.DS4Forms
             this.expose = expose;
             BindingVM = new BindingWindowViewModel(deviceNum, settings);
 
-            if (settings.control != DS4Windows.DS4Controls.None)
+            if (settings.Control != DS4Windows.DS4Controls.None)
             {
-                Title = $"Select action for {DS4Windows.Global.DS4InputNames[settings.control]}";
+                Title = $"Select action for {DS4Windows.Global.DS4InputNames[settings.Control]}";
             }
             else
             {
@@ -150,7 +150,7 @@ namespace DS4WinWPF.DS4Forms
         private void OutputButtonBtn_Click(object sender, RoutedEventArgs e)
         {
             OutBinding binding = BindingVM.ActionBinding;
-            DS4Windows.X360Controls defaultControl = DS4Windows.Global.defaultButtonMapping[(int)binding.input];
+            DS4Windows.X360Controls defaultControl = DS4Windows.Global.DefaultButtonMapping[(int)binding.input];
             Button button = sender as Button;
             if (associatedBindings.TryGetValue(button, out BindAssociation bind))
             {
@@ -194,7 +194,7 @@ namespace DS4WinWPF.DS4Forms
             OutBinding binding = BindingVM.ActionBinding;
             if (binding.outputType == OutBinding.OutType.Default)
             {
-                DS4Windows.X360Controls defaultBind = DS4Windows.Global.defaultButtonMapping[(int)binding.input];
+                DS4Windows.X360Controls defaultBind = DS4Windows.Global.DefaultButtonMapping[(int)binding.input];
                 if (!OutBinding.IsMouseRange(defaultBind))
                 {
                     if (conBtnMap.TryGetValue(defaultBind, out Button tempBtn))
@@ -374,10 +374,10 @@ namespace DS4WinWPF.DS4Forms
                 new BindAssociation() { outputType = BindAssociation.OutType.Button, control = DS4Windows.X360Controls.FifthMouse });
             mouse5Btn.Click += OutputButtonBtn_Click;
             associatedBindings.Add(mouseWheelUBtn,
-                new BindAssociation() { outputType = BindAssociation.OutType.Button, control = DS4Windows.X360Controls.WUP });
+                new BindAssociation() { outputType = BindAssociation.OutType.Button, control = DS4Windows.X360Controls.WheelUp });
             mouseWheelUBtn.Click += OutputButtonBtn_Click;
             associatedBindings.Add(mouseWheelDBtn,
-                new BindAssociation() { outputType = BindAssociation.OutType.Button, control = DS4Windows.X360Controls.WDOWN });
+                new BindAssociation() { outputType = BindAssociation.OutType.Button, control = DS4Windows.X360Controls.WheelDown });
             mouseWheelDBtn.Click += OutputButtonBtn_Click;
         }
 
@@ -846,7 +846,7 @@ namespace DS4WinWPF.DS4Forms
             if (!actBind.shiftBind)
             {
                 actBind.outputType = OutBinding.OutType.Default;
-                actBind.control = DS4Windows.Global.defaultButtonMapping[(int)actBind.input];
+                actBind.control = DS4Windows.Global.DefaultButtonMapping[(int)actBind.input];
             }
             else
             {

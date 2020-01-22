@@ -13,8 +13,7 @@ namespace DS4WinWPF.DS4Forms
     /// </summary>
     public partial class WelcomeDialog : Window
     {
-        private const string InstallerDL =
-            "https://github.com/ViGEm/ViGEmBus/releases/download/setup-v1.16.116/ViGEmBus_Setup_1.16.116.exe";
+        private const string InstallerDL = "https://github.com/ViGEm/ViGEmBus/releases/download/setup-v1.16.116/ViGEmBus_Setup_1.16.116.exe";
         private const string InstFileName = "ViGEmBus_Setup_1.16.116.exe";
         private string tempInstFileName;
 
@@ -32,19 +31,16 @@ namespace DS4WinWPF.DS4Forms
 
             InitializeComponent();
 
-            tempInstFileName = DS4Windows.Global.exedirpath + $"\\{InstFileName}.tmp";
+            tempInstFileName = DS4Windows.Global.ExeDirectoryPath + $"\\{InstFileName}.tmp";
         }
 
-        private void FinishedBtn_Click(object sender, RoutedEventArgs e)
-        {
-            Close();
-        }
+        private void FinishedBtn_Click(object sender, RoutedEventArgs e) => Close();
 
         private void VigemInstallBtn_Click(object sender, RoutedEventArgs e)
         {
-            if (File.Exists(DS4Windows.Global.exedirpath + $"\\{InstFileName}"))
+            if (File.Exists(DS4Windows.Global.ExeDirectoryPath + $"\\{InstFileName}"))
             {
-                File.Delete(DS4Windows.Global.exedirpath + $"\\{InstFileName}");
+                File.Delete(DS4Windows.Global.ExeDirectoryPath + $"\\{InstFileName}");
             }
 
             if (File.Exists(tempInstFileName))
@@ -74,11 +70,11 @@ namespace DS4WinWPF.DS4Forms
                 //Console.WriteLine(x.PercentComplete.ToString("P"));
             });
 
-            string filename = DS4Windows.Global.exedirpath + $"\\{InstFileName}";
+            string filename = DS4Windows.Global.ExeDirectoryPath + $"\\{InstFileName}";
             bool success = false;
             using (var downloadStream = new FileStream(tempInstFileName, FileMode.CreateNew))
             {
-                HttpResponseMessage response = await App.requestClient.GetAsync(InstallerDL,
+                HttpResponseMessage response = await App.RequestClient.GetAsync(InstallerDL,
                     downloadStream, progress);
                 success = response.IsSuccessStatusCode;
             }
@@ -89,10 +85,10 @@ namespace DS4WinWPF.DS4Forms
             }
             success = false; // Reset for later check
 
-            if (File.Exists(DS4Windows.Global.exedirpath + $"\\{InstFileName}"))
+            if (File.Exists(DS4Windows.Global.ExeDirectoryPath + $"\\{InstFileName}"))
             {
                 //vigemInstallBtn.Content = Properties.Resources.OpeningInstaller;
-                monitorProc = Process.Start(DS4Windows.Global.exedirpath + $"\\{InstFileName}");
+                monitorProc = Process.Start(DS4Windows.Global.ExeDirectoryPath + $"\\{InstFileName}");
                 vigemInstallBtn.Content = Properties.Resources.Installing;
                 success = true;
             }
@@ -124,7 +120,7 @@ namespace DS4WinWPF.DS4Forms
                     Dispatcher.BeginInvoke((Action)(() => { vigemInstallBtn.Content = Properties.Resources.InstallFailed; }), null);
                 }
 
-                File.Delete(DS4Windows.Global.exedirpath + $"\\{InstFileName}");
+                File.Delete(DS4Windows.Global.ExeDirectoryPath + $"\\{InstFileName}");
                 ((NonFormTimer)sender).Stop();
                 finished = true;
             }

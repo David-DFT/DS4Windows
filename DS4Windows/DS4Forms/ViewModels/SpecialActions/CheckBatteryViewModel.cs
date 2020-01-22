@@ -49,7 +49,7 @@ namespace DS4WinWPF.DS4Forms.ViewModels.SpecialActions
                 DS4Color dcolor = new DS4Color() { Red = color.R, Green = color.G, Blue = color.B };
                 DS4LightBar.ForcedColor[device] = dcolor;
                 DS4LightBar.ForcedFlash[device] = 0;
-                DS4LightBar.Forcelight[device] = true;
+                DS4LightBar.ForceLight[device] = true;
             }
         }
 
@@ -60,7 +60,7 @@ namespace DS4WinWPF.DS4Forms.ViewModels.SpecialActions
                 DS4Color dcolor = new DS4Color() { Red = color.R, Green = color.G, Blue = color.B };
                 DS4LightBar.ForcedColor[device] = dcolor;
                 DS4LightBar.ForcedFlash[device] = 0;
-                DS4LightBar.Forcelight[device] = true;
+                DS4LightBar.ForceLight[device] = true;
             }
         }
 
@@ -70,7 +70,7 @@ namespace DS4WinWPF.DS4Forms.ViewModels.SpecialActions
             {
                 DS4LightBar.ForcedColor[device] = new DS4Color(0, 0, 0);
                 DS4LightBar.ForcedFlash[device] = 0;
-                DS4LightBar.Forcelight[device] = false;
+                DS4LightBar.ForceLight[device] = false;
             }
         }
 

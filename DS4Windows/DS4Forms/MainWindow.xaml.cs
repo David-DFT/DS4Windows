@@ -143,18 +143,18 @@ namespace DS4WinWPF.DS4Forms
         {
             // Sorry other devs, gonna have to find your own server
             Uri url = new Uri("https://raw.githubusercontent.com/Ryochan7/DS4Windows/jay/DS4Windows/newest.txt");
-            string filename = Global.appdatapath + "\\version.txt";
+            string filename = Global.AppDataPath + "\\version.txt";
             using (var downloadStream = new FileStream(filename, FileMode.Create))
             {
-                Task<System.Net.Http.HttpResponseMessage> temp = App.requestClient.GetAsync(url.ToString(), downloadStream);
+                Task<System.Net.Http.HttpResponseMessage> temp = App.RequestClient.GetAsync(url.ToString(), downloadStream);
                 temp.Wait();
             }
         }
 
         private void Check_Version(bool showstatus = false)
         {
-            string version = Global.exeversion;
-            string newversion = File.ReadAllText(Global.appdatapath + "\\version.txt").Trim();
+            string version = Global.ExeVersion;
+            string newversion = File.ReadAllText(Global.AppDataPath + "\\version.txt").Trim();
             if (!string.IsNullOrWhiteSpace(newversion) && version.CompareTo(newversion) != 0)
             {
                 MessageBoxResult result = MessageBoxResult.No;
@@ -169,7 +169,7 @@ Properties.Resources.DS4Update, MessageBoxButton.YesNo, MessageBoxImage.Question
                     bool launch = false;
                     using (Process p = new Process())
                     {
-                        p.StartInfo.FileName = System.IO.Path.Combine(Global.exedirpath, "DS4Updater.exe");
+                        p.StartInfo.FileName = System.IO.Path.Combine(Global.ExeDirectoryPath, "DS4Updater.exe");
                         p.StartInfo.Arguments = "-autolaunch";
                         if (Global.AdminNeeded())
                             p.StartInfo.Verb = "runas";
@@ -189,12 +189,12 @@ Properties.Resources.DS4Update, MessageBoxButton.YesNo, MessageBoxImage.Question
                 }
                 else
                 {
-                    File.Delete(Global.appdatapath + "\\version.txt");
+                    File.Delete(Global.AppDataPath + "\\version.txt");
                 }
             }
             else
             {
-                File.Delete(Global.appdatapath + "\\version.txt");
+                File.Delete(Global.AppDataPath + "\\version.txt");
                 if (showstatus)
                 {
                     Dispatcher.Invoke(() => MessageBox.Show(Properties.Resources.UpToDate, "DS4Windows Updater"));
@@ -402,7 +402,7 @@ Suspend support not enabled.", true);
 
         private void UpdateTheUpdater()
         {
-            if (File.Exists(Global.exedirpath + "\\Update Files\\DS4Windows\\DS4Updater.exe"))
+            if (File.Exists(Global.ExeDirectoryPath + "\\Update Files\\DS4Windows\\DS4Updater.exe"))
             {
                 Process[] processes = Process.GetProcessesByName("DS4Updater");
                 while (processes.Length > 0)
@@ -411,10 +411,10 @@ Suspend support not enabled.", true);
                     processes = Process.GetProcessesByName("DS4Updater");
                 }
 
-                File.Delete(Global.exedirpath + "\\DS4Updater.exe");
-                File.Move(Global.exedirpath + "\\Update Files\\DS4Windows\\DS4Updater.exe",
-                    Global.exedirpath + "\\DS4Updater.exe");
-                Directory.Delete(Global.exedirpath + "\\Update Files", true);
+                File.Delete(Global.ExeDirectoryPath + "\\DS4Updater.exe");
+                File.Move(Global.ExeDirectoryPath + "\\Update Files\\DS4Windows\\DS4Updater.exe",
+                    Global.ExeDirectoryPath + "\\DS4Updater.exe");
+                Directory.Delete(Global.ExeDirectoryPath + "\\Update Files", true);
             }
         }
 
@@ -733,7 +733,7 @@ Suspend support not enabled.", true);
             dialog.Filter = "Text Documents (*.txt)|*.txt";
             dialog.Title = "Select Export File";
             // TODO: Expose config dir
-            dialog.InitialDirectory = Global.appdatapath;
+            dialog.InitialDirectory = Global.AppDataPath;
             if (dialog.ShowDialog() == true)
             {
                 LogWriter logWriter = new LogWriter(dialog.FileName, logvm.LogItems.ToList());
@@ -859,7 +859,7 @@ Suspend support not enabled.", true);
             {
                 case Util.WM_DEVICECHANGE:
                 {
-                    if (Global.runHotPlug)
+                    if (Global.RunHotPlug)
                     {
                             int Type = wParam.ToInt32();
                         if (Type == DBT_DEVICEARRIVAL ||
@@ -907,7 +907,7 @@ Suspend support not enabled.", true);
                                 if (int.TryParse(strData[1], out tdevice)) tdevice--;
 
                                 if (tdevice >= 0 && tdevice < ControlService.DS4_CONTROLLER_COUNT &&
-                                        File.Exists(Global.appdatapath + "\\Profiles\\" + strData[2] + ".xml"))
+                                        File.Exists(Global.AppDataPath + "\\Profiles\\" + strData[2] + ".xml"))
                                 {
                                     if (strData[0] == "loadprofile")
                                     {
@@ -1045,7 +1045,7 @@ Suspend support not enabled.", true);
 
         private void ProfFolderBtn_Click(object sender, RoutedEventArgs e)
         {
-            Process.Start(Global.appdatapath + "\\Profiles");
+            Process.Start(Global.AppDataPath + "\\Profiles");
         }
 
         private void ControlPanelBtn_Click(object sender, RoutedEventArgs e)
@@ -1064,7 +1064,7 @@ Suspend support not enabled.", true);
 
             StartStopBtn.IsEnabled = true;
             Process p = new Process();
-            p.StartInfo.FileName = Global.exelocation;
+            p.StartInfo.FileName = Global.ExeLocation;
             p.StartInfo.Arguments = "-driverinstall";
             p.StartInfo.Verb = "runas";
             try { p.Start(); }
@@ -1092,7 +1092,7 @@ Suspend support not enabled.", true);
                 return;
             
             Process p = new Process();
-            p.StartInfo.FileName = $"{Global.exelocation}";
+            p.StartInfo.FileName = $"{Global.ExeLocation}";
             p.StartInfo.Arguments = "-driverinstall";
             p.StartInfo.Verb = "runas";
 
@@ -1107,10 +1107,10 @@ Suspend support not enabled.", true);
             dialog.DefaultExt = ".xml";
             dialog.Filter = "DS4Windows Profile (*.xml)|*.xml";
             dialog.Title = "Select Profile to Import File";
-            if (Global.appdatapath != Global.exedirpath)
+            if (Global.AppDataPath != Global.ExeDirectoryPath)
                 dialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\DS4Windows" + @"\Profiles\";
             else
-                dialog.InitialDirectory = Global.exedirpath + @"\Profiles\";
+                dialog.InitialDirectory = Global.ExeDirectoryPath + @"\Profiles\";
 
             if (dialog.ShowDialog() == true)
             {
@@ -1119,7 +1119,7 @@ Suspend support not enabled.", true);
                 {
                     string profilename = System.IO.Path.GetFileName(files[i]);
                     string basename = System.IO.Path.GetFileNameWithoutExtension(files[i]);
-                    File.Copy(dialog.FileNames[i], Global.appdatapath + "\\Profiles\\" + profilename, true);
+                    File.Copy(dialog.FileNames[i], Global.AppDataPath + "\\Profiles\\" + profilename, true);
                     profileListHolder.AddProfileSort(basename);
                 }
             }
@@ -1136,7 +1136,7 @@ Suspend support not enabled.", true);
                 dialog.Title = "Select Profile to Export File";
                 Stream stream;
                 int idx = profilesListBox.SelectedIndex;
-                Stream profile = new StreamReader(Global.appdatapath + "\\Profiles\\" + profileListHolder.ProfileListCol[idx].Name + ".xml").BaseStream;
+                Stream profile = new StreamReader(Global.AppDataPath + "\\Profiles\\" + profileListHolder.ProfileListCol[idx].Name + ".xml").BaseStream;
                 if (dialog.ShowDialog() == true)
                 {
                     if ((stream = dialog.OpenFile()) != null)

@@ -12,7 +12,7 @@ namespace DS4WinWPF.DS4Forms
         {
             InitializeComponent();
 
-            string version = DS4Windows.Global.exeversion;
+            string version = DS4Windows.Global.ExeVersion;
             headerLb.Content += version + ")";
         }
 

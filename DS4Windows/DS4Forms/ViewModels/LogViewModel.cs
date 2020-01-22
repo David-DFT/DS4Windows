@@ -18,7 +18,7 @@ namespace DS4WinWPF.DS4Forms.ViewModels
 
         public LogViewModel(DS4Windows.ControlService service)
         {
-            string version = DS4Windows.Global.exeversion;
+            string version = DS4Windows.Global.ExeVersion;
             logItems.Add(new LogItem { Datetime = DateTime.Now, Message = $"DS4Windows version {version}" });
             //logItems.Add(new LogItem { Datetime = DateTime.Now, Message = "DS4Windows version 2.0" });
             //BindingOperations.EnableCollectionSynchronization(logItems, _colLockobj);

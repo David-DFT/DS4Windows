@@ -170,7 +170,7 @@ namespace DS4WinWPF.DS4Forms.ViewModels
         public string GetMappingString(bool shift = false)
         {
             string temp = Properties.Resources.Unassigned;
-            object action = !shift ? setting.action : setting.shiftAction;
+            object action = !shift ? setting.Action : setting.ShiftAction;
             bool sc = !shift ? setting.keyType.HasFlag(DS4KeyType.ScanCode) :
                 setting.shiftKeyType.HasFlag(DS4KeyType.ScanCode);
             bool extra = control >= DS4Controls.GyroXPos && control <= DS4Controls.SwipeDown;
@@ -199,11 +199,11 @@ namespace DS4WinWPF.DS4Forms.ViewModels
                 }
                 else
                 {
-                    temp = Global.GetX360ControlString(Global.defaultButtonMapping[(int)control], devType);
+                    temp = Global.GetX360ControlString(Global.DefaultButtonMapping[(int)control], devType);
                 }
             }
             else if (!extra && !shift)
-                temp = Global.GetX360ControlString(Global.defaultButtonMapping[(int)control], devType);
+                temp = Global.GetX360ControlString(Global.DefaultButtonMapping[(int)control], devType);
             else if (shift)
                 temp = "";
 
@@ -212,7 +212,7 @@ namespace DS4WinWPF.DS4Forms.ViewModels
 
         public bool HasShiftAction()
         {
-            return setting.shiftAction != null;
+            return setting.ShiftAction != null;
         }
 
         private static string ShiftTrigger(int trigger)

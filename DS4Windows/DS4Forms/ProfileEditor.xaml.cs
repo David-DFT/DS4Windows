@@ -558,7 +558,7 @@ namespace DS4WinWPF.DS4Forms
             {
                 App.RootHub.SetRumble(0, 0, ProfileSettingsVM.FuncDevNum);
             }
-            Global.outDevTypeTemp[deviceNum] = OutControllerType.X360;
+            Global.OutDevTypeTemp[deviceNum] = OutControllerType.X360;
             Global.LoadProfile(deviceNum, false, App.RootHub);
             Closed?.Invoke(this, EventArgs.Empty);
         }
@@ -681,7 +681,7 @@ namespace DS4WinWPF.DS4Forms
         {
             Global.BTPollRate[deviceNum] = ProfileSettingsVM.TempBTPollRateIndex;
             Global.OutContType[deviceNum] = ProfileSettingsVM.TempConType;
-            Global.outDevTypeTemp[deviceNum] = OutControllerType.X360;
+            Global.OutDevTypeTemp[deviceNum] = OutControllerType.X360;
         }
 
         private void SaveBtn_Click(object sender, RoutedEventArgs e)
@@ -717,7 +717,7 @@ namespace DS4WinWPF.DS4Forms
                 }
                 else
                 {
-                    string tempprof = Global.appdatapath + @"\Profiles\" + temp + ".xml";
+                    string tempprof = Global.AppDataPath + @"\Profiles\" + temp + ".xml";
                     if (!File.Exists(tempprof))
                     {
                         Global.SaveProfile(deviceNum, temp);
@@ -919,7 +919,7 @@ namespace DS4WinWPF.DS4Forms
                 DS4Device d = App.RootHub.Controllers[ProfileSettingsVM.FuncDevNum].Device;
                 if (d != null)
                 {
-                    System.Drawing.Point origWheelCenterPoint = new System.Drawing.Point(d.wheelCenterPoint.X, d.wheelCenterPoint.Y);
+                    System.Drawing.Point origWheelCenterPoint = new System.Drawing.Point(d.WheelCenterPoint.X, d.WheelCenterPoint.Y);
                     System.Drawing.Point origWheel90DegPointLeft = new System.Drawing.Point(d.wheel90DegPointLeft.X, d.wheel90DegPointLeft.Y);
                     System.Drawing.Point origWheel90DegPointRight = new System.Drawing.Point(d.wheel90DegPointRight.X, d.wheel90DegPointRight.Y);
 
@@ -943,7 +943,7 @@ namespace DS4WinWPF.DS4Forms
                         d.WheelRecalibrateActiveState = 4;
 
                         d.wheelFullTurnCount = 0;
-                        d.wheelCenterPoint = origWheelCenterPoint;
+                        d.WheelCenterPoint = origWheelCenterPoint;
                         d.wheel90DegPointLeft = origWheel90DegPointLeft;
                         d.wheel90DegPointRight = origWheel90DegPointRight;
                     }

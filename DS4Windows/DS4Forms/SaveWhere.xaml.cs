@@ -30,14 +30,14 @@ namespace DS4WinWPF.DS4Forms
 
         private void ProgFolderBtn_Click(object sender, RoutedEventArgs e)
         {
-            DS4Windows.Global.SaveWhere(DS4Windows.Global.exedirpath);
+            DS4Windows.Global.SaveWhere(DS4Windows.Global.ExeDirectoryPath);
             if (multisaves && dontDeleteCk.IsChecked == false)
             {
                 try { Directory.Delete(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\DS4Windows", true); }
                 catch { }
             }
             else if (!multisaves)
-                DS4Windows.Global.SaveDefault(DS4Windows.Global.exedirpath + "\\Profiles.xml");
+                DS4Windows.Global.SaveDefault(DS4Windows.Global.ExeDirectoryPath + "\\Profiles.xml");
 
             choiceMade = true;
             Close();
@@ -49,9 +49,9 @@ namespace DS4WinWPF.DS4Forms
             {
                 try
                 {
-                    Directory.Delete(DS4Windows.Global.exedirpath + "\\Profiles", true);
-                    File.Delete(DS4Windows.Global.exedirpath + "\\Profiles.xml");
-                    File.Delete(DS4Windows.Global.exedirpath + "\\Auto Profiles.xml");
+                    Directory.Delete(DS4Windows.Global.ExeDirectoryPath + "\\Profiles", true);
+                    File.Delete(DS4Windows.Global.ExeDirectoryPath + "\\Profiles.xml");
+                    File.Delete(DS4Windows.Global.ExeDirectoryPath + "\\Auto Profiles.xml");
                 }
                 catch (UnauthorizedAccessException) { MessageBox.Show("Cannot Delete old settings, please manaully delete", "DS4Windows"); }
             }

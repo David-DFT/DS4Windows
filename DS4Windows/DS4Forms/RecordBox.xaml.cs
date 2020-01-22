@@ -145,7 +145,7 @@ namespace DS4WinWPF.DS4Forms
 
                 ds4.Start();
                 Enable_Controls(false);
-                recordBoxVM.Sw.Restart();
+                recordBoxVM.Stopwatch.Restart();
                 Focus();
             }
             else
@@ -156,7 +156,7 @@ namespace DS4WinWPF.DS4Forms
                 recordBtn.Content = "Record";
                 mouseButtonsPanel.Visibility = Visibility.Hidden;
                 extraConPanel.Visibility = Visibility.Hidden;
-                recordBoxVM.Sw.Stop();
+                recordBoxVM.Stopwatch.Stop();
 
                 if (recordBoxVM.Toggle4thMouse)
                 {
@@ -268,7 +268,7 @@ namespace DS4WinWPF.DS4Forms
             dialog.DefaultExt = ".txt";
             dialog.Filter = "Text Documents (*.txt)|*.txt";
             dialog.Title = "Select Export File";
-            dialog.InitialDirectory = $"{Global.appdatapath}\\Macros";
+            dialog.InitialDirectory = $"{Global.AppDataPath}\\Macros";
             if (dialog.ShowDialog() == true)
             {
                 //recordBoxVM.MacroSteps.Clear();
@@ -426,7 +426,7 @@ namespace DS4WinWPF.DS4Forms
             dialog.DefaultExt = ".txt";
             dialog.Filter = "Text Documents (*.txt)|*.txt";
             dialog.Title = "Select Preset File";
-            dialog.InitialDirectory = $"{Global.appdatapath}\\Macros";
+            dialog.InitialDirectory = $"{Global.AppDataPath}\\Macros";
             if (dialog.ShowDialog() == true)
             {
                 recordBoxVM.MacroSteps.Clear();

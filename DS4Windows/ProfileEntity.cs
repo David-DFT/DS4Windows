@@ -25,7 +25,7 @@ namespace DS4WinWPF
         {
             if (!string.IsNullOrWhiteSpace(name))
             {
-                string filepath = DS4Windows.Global.appdatapath + @"\Profiles\" + name + ".xml";
+                string filepath = DS4Windows.Global.AppDataPath + @"\Profiles\" + name + ".xml";
                 if (File.Exists(filepath))
                 {
                     File.Delete(filepath);
